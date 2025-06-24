@@ -76,7 +76,7 @@ class User_list(Resource):
         )
         return response
     
-api.add_resource(User,'/users')
+# api.add_resource(User,'/users')
     
 
 class User_by_id(Resource):
