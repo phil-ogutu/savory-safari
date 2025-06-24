@@ -16,7 +16,7 @@ migrate=Migrate(app,db)
 db.init_app(app)
 
 
-class User_list(Resource):
+class User(Resource):
     def get(self):
         users=[user.to_dict()  for user in User.query.all()]
         response=make_response(
@@ -44,16 +44,16 @@ class User_list(Resource):
         )
         return response
     
-api.add_resource(User_list,'/users')
+api.add_resource(User,'/users')
     
 class User_by_id(Resource):
     def get(self,id):
         user_by_id=User.query.get(id)
         if user_by_id:
-            response=make_response{
-                jsonify(user_by_id):
-                200,
-            }
+            response=make_response(
+                jsonify(user_by_id),
+                200
+            )
             return response
         return jsonify({'error':f'*{user_by_id.username}* not found'})
     
@@ -68,8 +68,20 @@ class User_by_id(Resource):
             jsonify(response_body),
             200
         )
-        return response
-    
+        return response  
+
+    def delete(self,id):        
+        deleted_user=User.query.get(id)
+        if deleted_user:
+                 db.session.delete(deleted_user)
+                 db.session.commit()
+                 response_body=jsonify({'Message':f'User : *{deleted_user.username}* is deleted successfully'})
+                 return make_response(
+                      response_body,
+                      200
+                 )
+        return jsonify({'Alert':f'User with id *{id}* not found!'}), 404
+                 
 api.add_resource(User_by_id,'/users/<int:id>')
 
 
