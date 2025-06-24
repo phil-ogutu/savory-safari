@@ -74,6 +74,7 @@ class Post(db.Model):
             f"  mobile={self.mobile}\n"
             f">"
         )
+
 class Comment(db.Model):
     __tablename__ = 'comments'
 
