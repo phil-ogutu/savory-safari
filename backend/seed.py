@@ -56,6 +56,6 @@ with app.app_context():
     db.session.add_all([follow1, follow2])
     db.session.commit()
 
-    print("🌱 Seeding complete!")
+    print("Seeding complete!")
 
 
