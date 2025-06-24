@@ -28,6 +28,7 @@ import Register from "./pages/Register";
 function App() {
   return (
     <div className="App">
+      <h1>Hello</h1>
       <Register /> {/* Render the Register component */}
     </div>
   );
