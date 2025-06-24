@@ -17,6 +17,7 @@ db.init_app(app)
 
 api=Api(app)
 
+
 class Register(Resource):
     def post(self):
         data=request.get_json()
@@ -42,6 +43,7 @@ class Register(Resource):
         db.session(new_user)
         db.session.commit()
         encoded_jwt = jwt.encode({"username": new_user.username,id:new_user.id}, "secret", algorithm="HS256")
+
         response=make_response(
            {"token":encoded_jwt,"message":"User created successfully"},
            201
@@ -74,14 +76,19 @@ class User_list(Resource):
         )
         return response
     
+api.add_resource(User,'/users')
+    
+
 class User_by_id(Resource):
     def get(self,id):
         user_by_id=User.query.get(id)
         if user_by_id:
-            response=make_response({
-                jsonify(user_by_id):
-                200,
-            })
+
+            response=make_response(
+                jsonify(user_by_id),
+                200
+            )
+  
             return response
         return jsonify({'error':f'*{user_by_id.username}* not found'})
     
@@ -97,6 +104,19 @@ class User_by_id(Resource):
             200
         )
         return response
+    def delete(self,id):        
+        user_to_delete=User.query.get(id)
+        if user_to_delete:
+                 db.session.delete(user_to_delete)
+                 db.session.commit()
+                 response_body=jsonify({'Message':f'User : *{user_to_delete.username}* is deleted successfully'})
+                 return make_response(
+                      response_body,
+                      200
+                 )
+        return jsonify({'Alert':f'User with id *{id}* not found!'}), 404             
+
+
     
 class Posts(Resource):
     def get(self):
@@ -118,6 +138,7 @@ class Posts(Resource):
         location_tag = data['location_tag']
         profile_tag = data['profile_tag']
         mobile = data['mobile']
+
 
         new_post = Post(
             user_id=user_id,
