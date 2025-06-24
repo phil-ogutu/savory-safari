@@ -71,11 +71,11 @@ class User_by_id(Resource):
         return response  
 
     def delete(self,id):        
-        deleted_user=User.query.get(id)
-        if deleted_user:
-                 db.session.delete(deleted_user)
+        user_to_delete=User.query.get(id)
+        if user_to_delete:
+                 db.session.delete(user_to_delete)
                  db.session.commit()
-                 response_body=jsonify({'Message':f'User : *{deleted_user.username}* is deleted successfully'})
+                 response_body=jsonify({'Message':f'User : *{user_to_delete.username}* is deleted successfully'})
                  return make_response(
                       response_body,
                       200
