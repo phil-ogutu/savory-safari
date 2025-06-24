@@ -67,7 +67,6 @@ class Login(Resource):
         else:
             return make_response('Invalid credentials', 400)
 
-# 0719230137
 class User_list(Resource):
     def get(self):
         users=[user.to_dict()  for user in User.query.all()]
