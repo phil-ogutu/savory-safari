@@ -1,7 +1,12 @@
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import MetaData
 from datetime import datetime
 
-db = SQLAlchemy()
+metadata = MetaData(naming_convention={
+    "fk": "fk_%(table_name)s_%(column_0_name)s_%(referred_table_name)s",
+})
+
+db = SQLAlchemy(metadata=metadata)
 
 class User(db.Model):
     __tablename__ = 'users'
@@ -23,7 +28,17 @@ class User(db.Model):
     following = db.relationship('Follow', foreign_keys='Follow.follower_id', back_populates='follower')
     followers = db.relationship('Follow', foreign_keys='Follow.followed_id', back_populates='followed')
 
-
+    def __repr__(self):
+        return (
+            f"<User\n"
+            f"  id={self.id}\n"
+            f"  username={self.username}\n"
+            f"  email={self.email}\n"
+            f"  mobile={self.mobile}\n"
+            f"  user_bio={self.user_bio}\n"
+            f"  photo_url={self.photo_url}\n"
+            f">"
+        )
 
 class Post(db.Model):
     __tablename__ = 'posts'
@@ -45,6 +60,20 @@ class Post(db.Model):
     likes = db.relationship('Like', back_populates='post')
     favourites = db.relationship('Favourite', back_populates='post')
 
+    def __repr__(self):
+        return (
+            f"<Post\n"
+            f"  id={self.id}\n"
+            f"  user_id={self.user_id}\n"
+            f"  caption={self.caption}\n"
+            f"  media_url={self.media_url}\n"
+            f"  external_link={self.external_link}\n"
+            f"  food_id={self.food_id}\n"
+            f"  location_tag={self.location_tag}\n"
+            f"  profile_tag={self.profile_tag}\n"
+            f"  mobile={self.mobile}\n"
+            f">"
+        )
 
 class Comment(db.Model):
     __tablename__ = 'comments'
@@ -58,6 +87,15 @@ class Comment(db.Model):
     user = db.relationship('User', back_populates='comments')
     post = db.relationship('Post', back_populates='comments')
 
+    def __repr__(self):
+        return (
+            f"<Comment\n"
+            f"  id={self.id}\n"
+            f"  post_id={self.post_id}\n"
+            f"  user_id={self.user_id}\n"
+            f"  content={self.content}\n"
+            f">"
+        )
 
 class Like(db.Model):
     __tablename__ = 'likes'
@@ -70,6 +108,14 @@ class Like(db.Model):
     user = db.relationship('User', back_populates='likes')
     post = db.relationship('Post', back_populates='likes')
 
+    def __repr__(self):
+        return (
+            f"<Like\n"
+            f"  id={self.id}\n"
+            f"  post_id={self.post_id}\n"
+            f"  user_id={self.user_id}\n"
+            f">"
+        )
 
 class Favourite(db.Model):
     __tablename__ = 'favourites'
@@ -82,6 +128,14 @@ class Favourite(db.Model):
     user = db.relationship('User', back_populates='favourites')
     post = db.relationship('Post', back_populates='favourites')
 
+    def __repr__(self):
+        return (
+            f"<Favourite\n"
+            f"  id={self.id}\n"
+            f"  post_id={self.post_id}\n"
+            f"  user_id={self.user_id}\n"
+            f">"
+        )
 
 class Follow(db.Model):
     __tablename__ = 'follows'
@@ -94,6 +148,14 @@ class Follow(db.Model):
     follower = db.relationship('User', foreign_keys=[follower_id], back_populates='following')
     followed = db.relationship('User', foreign_keys=[followed_id], back_populates='followers')
 
+    def __repr__(self):
+        return (
+            f"<Follow\n"
+            f"  id={self.id}\n"
+            f"  follower_id={self.follower_id}\n"
+            f"  followed_id={self.followed_id}\n"
+            f">"
+        )
 
 class Food(db.Model):
     __tablename__ = 'foods'
@@ -108,3 +170,16 @@ class Food(db.Model):
 
     user = db.relationship('User', back_populates='foods')
     posts = db.relationship('Post', back_populates='food')
+
+    def __repr__(self):
+        return (
+            f"<Food\n"
+            f"  id={self.id}\n"
+            f"  name={self.name}\n"
+            f"  link={self.link}\n"
+            f"  user_id={self.user_id}\n"
+            f"  type_food={self.type_food}\n"
+            f"  price={self.price}\n"
+            f"  photo_url={self.photo_url}\n"
+            f">"
+        )
