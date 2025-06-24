@@ -7,17 +7,30 @@ export default function Register() {
   const [name, setName] = useState("");
   const navigate = useNavigate();
 
+  // Replace the below function with your actual registration logic
   const handleRegister = async (e) => {
     e.preventDefault();
+
     try {
-      const response = await fetch("https://api.example.com/register", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password, name }),
-      });
-      if (response.ok) navigate("/login");
+      // Placeholder for actual API call
+      // const response = await fetch('<your-api-endpoint>/register', {
+      //   method: "POST",
+      //   headers: { "Content-Type": "application/json" },
+      //   body: JSON.stringify({ email, password, name }),
+      // });
+
+      // if (response.ok) {
+      //   navigate("/login");
+      // } else {
+      //   throw new Error('Registration failed');
+      // }
+
+      // For now, we'll just log the input data and navigate to login
+      console.log({ email, password, name });
+      navigate("/login");
     } catch (error) {
       console.error("Register failed", error);
+      // Handle error (e.g., display an error message to the user)
     }
   };
 
