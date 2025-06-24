@@ -16,6 +16,7 @@ flask = "*"
 sqlalchemy = "*"
 bcrypt = "*"
 pyjwt = "*"
+flask-cors="*"
 
 [dev-packages]
 
