@@ -50,10 +50,10 @@ class User_by_id(Resource):
     def get(self,id):
         user_by_id=User.query.get(id)
         if user_by_id:
-            response=make_response{
-                jsonify(user_by_id):
-                200,
-            }
+            response=make_response(
+                jsonify(user_by_id),
+                200
+            )
             return response
         return jsonify({'error':f'*{user_by_id.username}* not found'})
     
