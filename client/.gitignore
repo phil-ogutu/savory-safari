@@ -23,5 +23,4 @@ yarn-debug.log*
 yarn-error.log*
 
 # Node.js package files
-package.json
 package-lock.json
