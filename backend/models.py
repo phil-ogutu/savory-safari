@@ -23,7 +23,7 @@ class User(db.Model, SerializerMixin):
 
     user_post_interactions = db.relationship('UserPost', back_populates='user')
 
-    serialize_rules = ('-user_post_interactions.user',)
+    serialize_rules = ('-user_post_interactions.user', '-password_hash',)
 
     def __repr__(self):
         return (
@@ -51,7 +51,7 @@ class Restaurant(db.Model, SerializerMixin):
 
     posts = db.relationship('Post', back_populates='restaurant')
 
-    serialize_rules = ('-posts.restaurant',)
+    serialize_rules = ('-posts.restaurant', '-password_hash',)
 
     def __repr__(self):
         return (
@@ -72,8 +72,10 @@ class Post(db.Model, SerializerMixin):
     restaurant_id = db.Column(db.Integer, db.ForeignKey('restaurants.id'), nullable=False)
     caption = db.Column(db.String)
     media_url = db.Column(db.String)
-    external_link = db.Column(db.String)
     location_tag = db.Column(db.String)
+    price = db.Column(db.Float)
+    type_food = db.Column(db.String)
+    category=db.Column(db.String)
     created_at = db.Column(db.DateTime, default=datetime.now)
 
     restaurant = db.relationship('Restaurant', back_populates='posts')
@@ -90,8 +92,10 @@ class Post(db.Model, SerializerMixin):
             f"  restaurant_id={self.restaurant_id}\n"
             f"  caption={self.caption}\n"
             f"  media_url={self.media_url}\n"
-            f"  external_link={self.external_link}\n"
             f"  location_tag={self.location_tag}\n"
+            f"  price={self.price}\n"
+            f"  type_food={self.type_food}\n"
+            f"  category={self.category}\n"
             f">"
         )
     
@@ -120,8 +124,8 @@ class UserPost(db.Model, SerializerMixin):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     post_id = db.Column(db.Integer, db.ForeignKey('posts.id'), nullable=False)
-    comment_id = db.Column(db.Integer, db.ForeignKey('comments.id'))
-    liked = db.Column(db.Boolean, default=False)
+    comment_id = db.Column(db.Integer, db.ForeignKey('comments.id'), default=None)
+    liked = db.Column(db.Boolean, default=False, nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.now)
 
     user = db.relationship('User', back_populates='user_post_interactions')

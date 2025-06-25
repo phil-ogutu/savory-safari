@@ -19,8 +19,8 @@ with app.app_context():
     nyama_mama = Restaurant(name="Nyama Mama", email="info@nyamamama.com", mobile="0700000000", password_hash="hash2", restaurant_bio="Home of tasty African dishes", photo_url="http://nyamamama.jpg")
 
     # Posts
-    post1 = Post(restaurant=kfc, caption="New burger alert!!", media_url="http://burger.jpg", external_link="http://kfc.com/burger", location_tag="Nairobi")
-    post2 = Post(restaurant=nyama_mama, caption="Our weekend special: Ugali & Nyama Choma!",  media_url="http://ugalinyama.jpg", external_link="http://nyamamama.com/special", location_tag="Mombasa")
+    post1 = Post(restaurant=kfc, caption="New burger alert!!", media_url="http://burger.jpg", location_tag="Nairobi", price=400, type_food="Burger", category="Fast Food")
+    post2 = Post(restaurant=nyama_mama, caption="Mbuzi Quarter!",  media_url="http://ugalinyama.jpg", location_tag="Mombasa", price=600, type_food="Nyama Choma", category="African")
 
     db.session.add_all([post1, post2, kfc, nyama_mama])
     db.session.commit()
