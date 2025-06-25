@@ -1,6 +1,7 @@
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import MetaData
 from datetime import datetime
+from sqlalchemy_serializer import SerializerMixin
 
 metadata = MetaData(naming_convention={
     "fk": "fk_%(table_name)s_%(column_0_name)s_%(referred_table_name)s",
@@ -8,9 +9,9 @@ metadata = MetaData(naming_convention={
 
 db = SQLAlchemy(metadata=metadata)
 
-class User(db.Model):
+class User(db.Model, SerializerMixin):
     __tablename__ = 'users'
-    
+
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String)
     email = db.Column(db.String)
@@ -28,6 +29,17 @@ class User(db.Model):
     following = db.relationship('Follow', foreign_keys='Follow.follower_id', back_populates='follower')
     followers = db.relationship('Follow', foreign_keys='Follow.followed_id', back_populates='followed')
 
+    serialize_rules = (
+        '-password_hash',                 # Hide password
+        '-posts.user',                   # Avoid circular ref
+        '-comments.user',
+        '-likes.user',
+        '-favourites.user',
+        '-foods.user',
+        '-following.follower',          # Prevent infinite nesting
+        '-followers.followed',
+    )
+
     def __repr__(self):
         return (
             f"<User\n"
@@ -40,7 +52,7 @@ class User(db.Model):
             f">"
         )
 
-class Post(db.Model):
+class Post(db.Model,SerializerMixin):
     __tablename__ = 'posts'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -60,6 +72,14 @@ class Post(db.Model):
     likes = db.relationship('Like', back_populates='post')
     favourites = db.relationship('Favourite', back_populates='post')
 
+    serialize_rules = (
+        '-user.posts',        # prevent circular reference
+        '-food.posts',
+        '-comments.post',
+        '-likes.post',
+        '-favourites.post'
+    )
+
     def __repr__(self):
         return (
             f"<Post\n"
@@ -75,7 +95,7 @@ class Post(db.Model):
             f">"
         )
 
-class Comment(db.Model):
+class Comment(db.Model,SerializerMixin):
     __tablename__ = 'comments'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -87,6 +107,11 @@ class Comment(db.Model):
     user = db.relationship('User', back_populates='comments')
     post = db.relationship('Post', back_populates='comments')
 
+    serialize_rules = (
+        '-user.comments',
+        '-post.comments'
+    )
+
     def __repr__(self):
         return (
             f"<Comment\n"
@@ -97,7 +122,7 @@ class Comment(db.Model):
             f">"
         )
 
-class Like(db.Model):
+class Like(db.Model,SerializerMixin):
     __tablename__ = 'likes'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -108,6 +133,11 @@ class Like(db.Model):
     user = db.relationship('User', back_populates='likes')
     post = db.relationship('Post', back_populates='likes')
 
+    serialize_rules = (
+        '-user.likes',
+        '-post.likes'
+    )
+
     def __repr__(self):
         return (
             f"<Like\n"
@@ -117,7 +147,7 @@ class Like(db.Model):
             f">"
         )
 
-class Favourite(db.Model):
+class Favourite(db.Model,SerializerMixin):
     __tablename__ = 'favourites'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -128,6 +158,11 @@ class Favourite(db.Model):
     user = db.relationship('User', back_populates='favourites')
     post = db.relationship('Post', back_populates='favourites')
 
+    serialize_rules = (
+        '-user.favourites',
+        '-post.favourites'
+    )
+
     def __repr__(self):
         return (
             f"<Favourite\n"
@@ -137,7 +172,7 @@ class Favourite(db.Model):
             f">"
         )
 
-class Follow(db.Model):
+class Follow(db.Model, SerializerMixin):
     __tablename__ = 'follows'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -148,6 +183,11 @@ class Follow(db.Model):
     follower = db.relationship('User', foreign_keys=[follower_id], back_populates='following')
     followed = db.relationship('User', foreign_keys=[followed_id], back_populates='followers')
 
+    serialize_rules = (
+        '-follower.following',
+        '-followed.followers',
+    )
+
     def __repr__(self):
         return (
             f"<Follow\n"
@@ -157,7 +197,7 @@ class Follow(db.Model):
             f">"
         )
 
-class Food(db.Model):
+class Food(db.Model,SerializerMixin):
     __tablename__ = 'foods'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -170,6 +210,11 @@ class Food(db.Model):
 
     user = db.relationship('User', back_populates='foods')
     posts = db.relationship('Post', back_populates='food')
+
+    serialize_rules = (
+        '-user.foods',
+        '-posts.food'
+    )
 
     def __repr__(self):
         return (
