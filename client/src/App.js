@@ -25,11 +25,12 @@ import Register from "./pages/Register";
 // }
 
 // export default App;
+
 function App() {
   return (
     <div className="App">
       <h1>Hello</h1>
-      <Register /> {/* Render the Register component */}
+      <Register /> {/* here we Render the Register component */}
     </div>
   );
 }
