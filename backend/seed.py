@@ -1,5 +1,5 @@
 from app import app
-from models import db, User, Food, Post, Comment, Like, Favourite, Follow
+from models import db, User, Restaurant, Post, Comment, UserPost
 from datetime import datetime
 
 with app.app_context():
@@ -14,48 +14,29 @@ with app.app_context():
     db.session.add_all([alice, bob, charlie])
     db.session.commit()
 
-    # Foods
-    pizza = Food(name="Pizza", link="http://pizza.com", user=alice, type_food="Fast Food", price="500", photo_url="http://pizza.jpg")
-    burger = Food(name="Burger", link="http://burger.com", user=bob, type_food="Snack", price="350", photo_url="http://burger.jpg")
-
-    db.session.add_all([pizza, burger])
-    db.session.commit()
+    # Restaurants
+    kfc = Restaurant(name="KFC", email="info@kfc.com", mobile="0700000000", password_hash="hash1", restaurant_bio="Finger-licking good", photo_url="http://kfc.jpg")
+    nyama_mama = Restaurant(name="Nyama Mama", email="info@nyamamama.com", mobile="0700000000", password_hash="hash2", restaurant_bio="Home of tasty African dishes", photo_url="http://nyamamama.jpg")
 
     # Posts
-    post1 = Post(user=alice, caption="Best pizza ever!", media_url="http://post1.jpg", external_link="http://post1.com", food=pizza, location_tag="Nairobi", profile_tag="alice", mobile="0700000001")
-    post2 = Post(user=bob, caption="Try my juicy burger!", media_url="http://post2.jpg", external_link="http://post2.com", food=burger, location_tag="Mombasa", profile_tag="bob", mobile="0700000002")
+    post1 = Post(restaurant=kfc, caption="New burger alert!!", media_url="http://burger.jpg", external_link="http://kfc.com/burger", location_tag="Nairobi")
+    post2 = Post(restaurant=nyama_mama, caption="Our weekend special: Ugali & Nyama Choma!",  media_url="http://ugalinyama.jpg", external_link="http://nyamamama.com/special", location_tag="Mombasa")
 
-    db.session.add_all([post1, post2])
+    db.session.add_all([post1, post2, kfc, nyama_mama])
     db.session.commit()
 
     # Comments
-    comment1 = Comment(user=charlie, post=post1, content="Looks delicious!")
-    comment2 = Comment(user=alice, post=post2, content="Wow, I need to try this!")
+    comment1 = Comment(content="This looks mouthwatering")
+    comment2 = Comment(content="Can't wait to try this out!")
 
     db.session.add_all([comment1, comment2])
     db.session.commit()
 
-    # Likes
-    like1 = Like(user=charlie, post=post1)
-    like2 = Like(user=alice, post=post2)
+    up1 = UserPost(user=alice, post=post1, comment=comment1, liked=True)
+    up2 = UserPost(user=charlie, post=post2, comment=comment2, liked=False)
+    up3 = UserPost(user=bob, post=post2, liked=True) 
 
-    db.session.add_all([like1, like2])
-    db.session.commit()
-
-    # Favourites
-    fav1 = Favourite(user=charlie, post=post1)
-    fav2 = Favourite(user=alice, post=post2)
-
-    db.session.add_all([fav1, fav2])
-    db.session.commit()
-
-    # Follows
-    follow1 = Follow(follower=alice, followed=bob)
-    follow2 = Follow(follower=charlie, followed=alice)
-
-    db.session.add_all([follow1, follow2])
+    db.session.add_all([up1, up2, up3])
     db.session.commit()
 
     print("Seeding complete!")
-
-

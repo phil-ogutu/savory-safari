@@ -2,7 +2,7 @@ from flask import Flask,request,jsonify,make_response
 from flask_cors import CORS
 from flask_restful import Resource,Api
 from flask_migrate import Migrate
-from models import db, User,Post,Comment,Like,Favourite,Follow,Food
+from models import db, User,Post
 import bcrypt
 import jwt
 
