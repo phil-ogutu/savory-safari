@@ -2,7 +2,7 @@ from flask import Flask,request,jsonify,make_response
 from flask_cors import CORS
 from flask_restful import Resource,Api
 from flask_migrate import Migrate
-from models import db, User,Post,Comment, Restaurant, User_Post
+from models import db, User,Post,Comment, Restaurant, UserPost
 import bcrypt
 import jwt
 
@@ -335,7 +335,7 @@ class PostById(Resource):
                 db.session.commit()
                 # create a new interaction
                 # get recent state of interaction
-                new_interaction = User_Post(
+                new_interaction = UserPost(
                     user_id = user_id,
                     post_id = id,
                     comment_id=new_comment.id,
@@ -348,7 +348,7 @@ class PostById(Resource):
                 # we are liking a post
                 # Like or unlike the post (toggle only user's own like)
                 new_like_status = not recent_interaction.liked if recent_interaction.liked else True
-                new_interaction = User_Post(
+                new_interaction = UserPost(
                     user_id = user_id,
                     post_id = id,
                     comment_id=None,
