@@ -22,8 +22,8 @@ with app.app_context():
     db.session.commit()
 
     # Posts
-    post1 = Post(user=alice, caption="Best pizza ever!", media_url="http://post1.jpg", food=pizza, location_tag="Nairobi", profile_tag="alice", mobile="0700000001")
-    post2 = Post(user=bob, caption="Try my juicy burger!", media_url="http://post2.jpg", food=burger, location_tag="Mombasa", profile_tag="bob", mobile="0700000002")
+    post1 = Post(user=alice, caption="Best pizza ever!", media_url="http://post1.jpg", external_link="http://post1.com", food=pizza, location_tag="Nairobi", profile_tag="alice", mobile="0700000001")
+    post2 = Post(user=bob, caption="Try my juicy burger!", media_url="http://post2.jpg", external_link="http://post2.com", food=burger, location_tag="Mombasa", profile_tag="bob", mobile="0700000002")
 
     db.session.add_all([post1, post2])
     db.session.commit()
