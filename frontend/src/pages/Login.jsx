@@ -38,7 +38,7 @@ function Login({ setUser }) {
           initialValues={{ email: "", password: "" }}
           validationSchema={errorMessagesSchema}
           onSubmit={(values, e) => {
-            fetch("https://ireporter-backend.onrender.com/login_user", {
+            fetch("https://example.com/login_user", {
               method: "POST",
               headers: {
                 "Content-Type": "application/json",

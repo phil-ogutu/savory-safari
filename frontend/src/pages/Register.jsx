@@ -49,7 +49,7 @@ function Register() {
           }}
           validationSchema={errorMessagesSchema}
           onSubmit={({ confirmPassword, e, ...values }) => {
-            fetch("https://ireporter-backend.onrender.com/signup_user", {
+            fetch("https:/example.com/signup_user", {
               method: "POST",
               headers: {
                 "Content-Type": "application/json",
