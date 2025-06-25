@@ -278,8 +278,8 @@ class Posts(Resource):
             "type_food": post.type_food,
             "category": post.category,
             "created_at": post.created_at,
-            "likes": len({interaction.user_id for interaction in post.user_posts if interaction.liked}),
-            "comments": [{"user": interaction.user.username, "content": interaction.comment.content,"created_at":interaction.comment.created_at} for interaction in post.user_posts if interaction.comment_id is not None],
+            "likes": len({interaction.user_id for interaction in post.user_posts_interactions if interaction.liked}),
+            "comments": [{"user": interaction.user.username, "content": interaction.comment.content,"created_at":interaction.comment.created_at} for interaction in post.user_posts_interactions if interaction.comment_id is not None],
         } for post in Post.query.all()]
         response=make_response(
             jsonify(posts),
@@ -341,8 +341,8 @@ class PostById(Resource):
                 "type_food": post.type_food,
                 "category": post.category,
                 "created_at": post.created_at,
-                "likes": len({interaction.user_id for interaction in post.user_posts if interaction.liked}),
-                "comments": [{"user": interaction.user.username, "content": interaction.comment.content,"created_at":interaction.comment.created_at} for interaction in post.user_posts if interaction.comment_id is not None],
+                "likes": len({interaction.user_id for interaction in post.user_posts_interactions if interaction.liked}),
+                "comments": [{"user": interaction.user.username, "content": interaction.comment.content,"created_at":interaction.comment.created_at} for interaction in post.user_posts_interactions if interaction.comment_id is not None],
             }, 200)
         return make_response({'message': 'Post not found'}, 404)
 
@@ -355,7 +355,7 @@ class PostById(Resource):
             data = request.get_json()
             user_id = data['user_id']
             content = data['content']
-            recent_interaction = post.user_posts[-1]
+            recent_interaction = post.user_posts_interactions[-1]
             if content is not None:
                 # we are creating a new comment 
                 # save a comment to db
@@ -394,7 +394,7 @@ class PostById(Resource):
     '<user_id=1, post_id=1, liked=true, comment_id=null>',
     '<user_id=1, post_id=1, liked=false, comment_id=null>',
     '<user_id=1, post_id=1, liked=true, comment_id=null>', # we have to know the previous state of the post
-    # do a get request to know the post state recent_post = post.user_posts[-1]
+    # do a get request to know the post state recent_post = post.user_posts_interactions[-1]
     '<user_id=1, post_id=1, liked=recent_post.liked, comment_id=1>',
     '<user_id=2, post_id=1, liked=true, comment_id=4>',
     '<user_id=3, post_id=1, liked=false, comment_id=5>',
