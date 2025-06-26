@@ -1,15 +1,165 @@
-import React from "react";
+import React, { useState } from "react";
 import { Input } from "../components/UI/Input";
 import { Button } from "../components/UI/Button";
 
 export default function Upload() {
+  const [caption, setCaption] = useState("");
+  const [location, setLocation] = useState("");
+  const [category, setCategory] = useState("");
+  const [type, setType] = useState("");
+  const [price, setPrice] = useState("");
+  const [selectedFile, setSelectedFile] = useState(null);
+
+  const handleSubmit = (e) => {
+    e.preventDefault()
+
+    if (!selectedFile) {
+      alert("Please upload file")
+      return
+    }
+
+    const formData = new FormData();
+    formData.append("file", selectedFile);
+    formData.append("caption", caption);
+    formData.append("location", location);
+    formData.append("category", category);
+    formData.append("type", type);
+    formData.append("price", price);
+
+    fetch("http://endpoint", { method: "POST", body: formData })
+      .then((res) => {
+        if (!res.ok) throw new Error("Upload failed");
+        return res.json();
+      })
+      .then((data) => {
+        alert("Upload successful!");
+        console.log(data);
+        setCaption("");
+        setLocation("");
+        setCategory("");
+        setType("");
+        setPrice("");
+        setSelectedFile(null);
+      })
+      .catch((err) => {
+        console.error(err);
+        alert("Upload error");
+      });
+  };
+
   return (
-    <div className="max-w-xl mx-auto px-4 py-6">
-      <h2 className="text-xl font-bold mb-4">Upload a New Dish</h2>
-      <form className="space-y-4">
-        <Input placeholder="Title or Caption" />
-        <Input type="file" accept="image/*" />
-        <Button type="submit">Post</Button>
+    <div className="max-w-xl mx-auto px-10 py-8 bg-gray-100 rounded-xl">
+      <h2 className="text-xl font-semibold mb-4 text-center">
+        Upload a new dish
+      </h2>
+      <div className="mb-5 flex items-center justify-center w-full">
+        <label
+          for="dropzone-file"
+          className="flex flex-col items-center justify-center w-full h-64 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 dark:hover:bg-gray-800 dark:bg-gray-700 hover:bg-gray-100 dark:border-gray-600 dark:hover:border-gray-500 dark:hover:bg-gray-600"
+        >
+          <div className="flex flex-col items-center justify-center pt-5 pb-6">
+            <svg
+              className="w-8 h-8 mb-4 text-gray-500 dark:text-gray-400"
+              aria-hidden="true"
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 20 16"
+            >
+              <path
+                stroke="currentColor"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M13 13h3a3 3 0 0 0 0-6h-.025A5.56 5.56 0 0 0 16 6.5 5.5 5.5 0 0 0 5.207 5.021C5.137 5.017 5.071 5 5 5a4 4 0 0 0 0 8h2.167M10 15V6m0 0L8 8m2-2 2 2"
+              />
+            </svg>
+            <p className="mb-2 text-sm text-gray-500 dark:text-gray-400">
+              <span className="font-semibold">Click to upload</span> or drag and
+              drop
+            </p>
+            <p className="text-xs text-gray-500 dark:text-gray-400">
+              SVG, PNG, JPG or GIF (MAX. 800x400px)
+            </p>
+          </div>
+          <input id="dropzone-file" type="file" className="hidden" onChange={(e) => setSelectedFile(e.target.files[0])}/>
+        </label>
+      </div>
+
+      <form
+        onSubmit={handleSubmit}
+        className="w-full grid grid-cols-1 md:grid-cols-2 gap-4 gap-y-0"
+      >
+        <div className="mb-5">
+          <label className="block mb-2 text-sm font-medium text-gray-900">
+            Caption
+          </label>
+          <input
+            type="text"
+            value={caption}
+            onChange={(e) => setCaption(e.target.value)}
+            className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-full p-2.5"
+            placeholder="Caption"
+            required
+          />
+        </div>
+        <div className="mb-5">
+          <label className="block mb-2 text-sm font-medium text-gray-900">
+            Location
+          </label>
+          <input
+            type="text"
+            value={location}
+            onChange={(e) => setLocation(e.target.value)}
+            className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-full p-2.5"
+            placeholder="Location"
+            required
+          />
+        </div>
+        <div className="mb-5">
+          <label className="block mb-2 text-sm font-medium text-gray-900">
+            Category
+          </label>
+          <input
+            type="text"
+            value={category}
+            onChange={(e) => setCategory(e.target.value)}
+            className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-full p-2.5"
+            placeholder="Category"
+            required
+          />
+        </div>
+        <div className="mb-5">
+          <label className="block mb-2 text-sm font-medium text-gray-900">
+            Type
+          </label>
+          <input
+            type="text"
+            value={type}
+            onChange={(e) => setType(e.target.value)}
+            className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-full p-2.5"
+            placeholder="Type of Food"
+            required
+          />
+        </div>
+        <div className="mb-5 col-span-2">
+          <label className="block mb-2 text-sm font-medium text-gray-900">
+            Price
+          </label>
+          <input
+            type="text"
+            value={price}
+            onChange={(e) => setPrice(e.target.value)}
+            className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-full p-2.5"
+            placeholder="Price"
+            required
+          />
+        </div>
+        <button
+          type="submit"
+          className="col-span-2 text-white bg-blue-700 hover:bg-blue-800 font-medium rounded-lg text-sm w-full px-5 py-2.5 text-center"
+        >
+          Upload
+        </button>
       </form>
     </div>
   );
