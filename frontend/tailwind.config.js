@@ -4,6 +4,12 @@ module.exports = {
   theme: {
     extend: {
       colors: {
+        // Custom Colors
+        cream: "#fbf0cb",
+        orange: "#d3622c",
+        "light-orange": "#e86f37",
+        white: "#FFFFFF",
+
         "color-primary": "#E6E9EA",
         "color-secondary": "#4C5562",
         "color-tertiary": "#244873",
