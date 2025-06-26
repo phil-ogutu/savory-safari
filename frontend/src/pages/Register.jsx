@@ -1,68 +1,140 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { Input } from "../components/UI/Input";
+import { Formik, Form, Field } from "formik";
+import * as Yup from "yup";
+import YupPassword from "yup-password";
 import { Button } from "../components/UI/Button";
+import { useNavigate } from "react-router-dom";
+import { useSnackbar } from "notistack";
 
-export default function Register() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [username, setUsername] = useState("");
+function Register() {
   const navigate = useNavigate();
+  const { enqueueSnackbar } = useSnackbar();
 
-  const handleRegister = async (e) => {
-    e.preventDefault();
-    try {
-      const res = await fetch("https://api.example.com/register", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password, username }),
-      });
-      if (res.ok) {
-        navigate("/login");
-      } else {
-        const err = await res.json();
-        alert(err.message || "Registration failed");
-      }
-    } catch (error) {
-      console.error("Registration error:", error);
-      alert("Something went wrong.");
-    }
-  };
+  function handleLogInClick() {
+    navigate("/login");
+  }
+
+  YupPassword(Yup);
+  const errorMessagesSchema = Yup.object().shape({
+    full_name: Yup.string()
+      .min(2, "Username too short!")
+      .max(50, "Username too long")
+      .required("This field is required"),
+    username: Yup.string()
+      .min(2, "Username too short!")
+      .max(50, "Username too long")
+      .required("This field is required"),
+    email: Yup.string()
+      .email("Invalid email")
+      .required("This field is required"),
+    password: Yup.string().password().min(6),
+    confirmPassword: Yup.string()
+      .required("Please retype your password")
+      .oneOf([Yup.ref("password")], "Passwords do not match!"),
+  });
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <form
-        onSubmit={handleRegister}
-        className="bg-white p-6 rounded-lg shadow w-full max-w-sm space-y-4"
-      >
-        <h2 className="text-xl font-bold text-center">Create Account</h2>
-        <Input
-          placeholder="Username"
-          value={username}
-          onChange={(e) => setUsername(e.target.value)}
-        />
-        <Input
-          type="email"
-          placeholder="Email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-        />
-        <Input
-          type="password"
-          placeholder="Password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-        />
-        <Button type="submit" className="w-full">
-          Register
-        </Button>
-        <p className="text-sm text-center">
-          Already have an account?{" "}
-          <a href="/login" className="text-blue-500">
-            Login
-          </a>
+    <>
+      <div className="flex flex-col bg-color-primary  items-center justify-center p-20">
+        <h1 className="font-semiBold text-2xl text-color-tertiary mb-8">
+          {" "}
+          Sign Up
+        </h1>
+        <Formik
+          initialValues={{
+            full_name: "",
+            username: "",
+            email: "",
+            password: "",
+            confirmPassword: "",
+          }}
+          validationSchema={errorMessagesSchema}
+          onSubmit={({ confirmPassword, e, ...values }) => {
+            fetch("https:/example.com/signup_user", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify(values, null, 2),
+            }).then((res) => {
+              console.log(res.status);
+              if (res.status === 201) {
+                navigate("/login");
+                enqueueSnackbar("Signed Up Successful", { variant: "success" });
+              }
+            });
+            // e.resetForm();
+          }}
+        >
+          {({ errors, touched }) => (
+            <Form className="flex flex-col bg-color-blue content-center justify-center max-w-xs w-full">
+              <label
+                className="m-2 text-color-tertiary font-bold"
+                htmlFor="username"
+              >
+                Username
+              </label>
+              <Field
+                type="text"
+                name="username"
+                id="username"
+                className="text-rich-black px-2 rounded"
+              />
+              {touched.username && errors.username && (
+                <div className="text-color-red">{errors.username}</div>
+              )}
+
+              <label
+                className="m-2 text-color-tertiary font-bold"
+                htmlFor="email"
+              >
+                Email address
+              </label>
+              <Field
+                type="text"
+                name="email"
+                id="email"
+                className="text-rich-black px-2 rounded"
+              />
+              {touched.email && errors.email && (
+                <div className="text-color-red">{errors.email}</div>
+              )}
+
+              <label
+                className="m-2 text-color-tertiary font-bold"
+                htmlFor="password"
+              >
+                Password
+              </label>
+              <Field
+                type="password"
+                name="password"
+                id="password"
+                className="text-rich-black px-2 rounded"
+              />
+              {touched.password && errors.password && (
+                <div className="text-color-red">{errors.password}</div>
+              )}
+
+              <Button
+                type="submit"
+                content="Sign Up"
+                className="text-sm my-5 mx-auto px-1 bg-color-blue2 py-2 w-2/6"
+              >
+                {" "}
+                Sign Up{" "}
+              </Button>
+            </Form>
+          )}
+        </Formik>
+        <p>
+          Already Registered?{" "}
+          <span className="font-bold" onClick={handleLogInClick}>
+            Log In Here
+          </span>
         </p>
-      </form>
-    </div>
+      </div>
+    </>
   );
 }
+
+export default Register;
