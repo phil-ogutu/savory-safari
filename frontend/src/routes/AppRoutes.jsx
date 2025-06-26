@@ -3,6 +3,7 @@ import { Routes, Route } from "react-router-dom";
 import AppLayout from "../layouts/AppLayout";
 import Home from "../pages/Home";
 import Explore from "../pages/Explore";
+import Search from "../pages/Search";
 import Upload from "../pages/Upload";
 import Login from "../pages/Login";
 import Register from "../pages/Register";
@@ -22,6 +23,7 @@ const AppRoutes = () => {
       <Route element={<AppLayout />}>
         <Route index element={<Home />} />
         <Route path="/explore" element={<Explore />} />
+        <Route path="/search" element={<Search />} />
         <Route path="/post/:id" element={<PostDetails />} />
         <Route path="/profile/:username" element={<Profile />} />
         <Route
