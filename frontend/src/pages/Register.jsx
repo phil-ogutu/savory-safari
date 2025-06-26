@@ -1,22 +1,28 @@
+import React from "react";
 import { Formik, Form, Field } from "formik";
 import * as Yup from "yup";
 import YupPassword from "yup-password";
 import { Button } from "../components/UI/Button";
 import { useNavigate } from "react-router-dom";
 import { useSnackbar } from "notistack";
+import ImageCarousel from "../components/UI/ImageCarousel";
 
+// Extend Yup with password validation
 YupPassword(Yup);
 
-function Register() {
+const validationSchema = Yup.object().shape({
+  username: Yup.string().min(2).required("Username is required"),
+  email: Yup.string().email().required("Email is required"),
+  mobile: Yup.string().min(10).required("Mobile number is required"),
+  password: Yup.string().password().required("Password is required"),
+  role: Yup.string()
+    .oneOf(["user", "restaurant"], "Select a role")
+    .required("Role is required"),
+});
+
+const Register = () => {
   const navigate = useNavigate();
   const { enqueueSnackbar } = useSnackbar();
-
-  const schema = Yup.object().shape({
-    username: Yup.string().min(2).required("Username is required"),
-    email: Yup.string().email().required("Email is required"),
-    mobile: Yup.string().min(10).required("Mobile number is required"),
-    password: Yup.string().password().required("Password is required"),
-  });
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-white px-4">
@@ -34,23 +40,31 @@ function Register() {
               email: "",
               mobile: "",
               password: "",
+              role: "",
             }}
-            validationSchema={schema}
+            validationSchema={validationSchema}
             onSubmit={(values) => {
               fetch("https://example.com/signup_user", {
+                // Replace with your actual API URL
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(values),
-              }).then((res) => {
-                if (res.status === 201) {
-                  enqueueSnackbar("Signed up successfully", {
-                    variant: "success",
-                  });
-                  navigate("/login");
-                } else {
-                  enqueueSnackbar("Something went wrong", { variant: "error" });
-                }
-              });
+              })
+                .then((res) => {
+                  if (res.status === 201) {
+                    enqueueSnackbar("Signed up successfully", {
+                      variant: "success",
+                    });
+                    navigate("/login");
+                  } else {
+                    enqueueSnackbar("Something went wrong", {
+                      variant: "error",
+                    });
+                  }
+                })
+                .catch(() =>
+                  enqueueSnackbar("Network error", { variant: "error" })
+                );
             }}
           >
             {({ errors, touched }) => (
@@ -127,6 +141,27 @@ function Register() {
                   )}
                 </div>
 
+                <div>
+                  <label
+                    className="text-sm font-semibold text-gray-700"
+                    htmlFor="role"
+                  >
+                    Role
+                  </label>
+                  <Field
+                    as="select"
+                    name="role"
+                    className="w-full px-4 py-2 rounded border"
+                  >
+                    <option value="">Select Role</option>
+                    <option value="user">User</option>
+                    <option value="restaurant">Restaurant</option>
+                  </Field>
+                  {errors.role && touched.role && (
+                    <div className="text-sm text-red-500">{errors.role}</div>
+                  )}
+                </div>
+
                 <div className="flex items-center justify-between text-sm">
                   <label className="flex items-center gap-2">
                     <input type="checkbox" className="accent-orange-700" />{" "}
@@ -157,26 +192,11 @@ function Register() {
 
         {/* Right Carousel / Inspo Panel */}
         <div className="hidden md:flex bg-white flex-col items-center justify-center p-10">
-          <h1 className="text-3xl font-bold text-orange-700 mb-4">
-            savorySafari
-          </h1>
-          <div className="text-center text-2xl font-bold text-orange-800 leading-snug">
-            Some
-            <br />
-            content / images
-            <br />
-            carousels of food
-          </div>
-          <p className="text-sm mt-4 text-yellow-500">some inspos goes here</p>
-          <div className="mt-6 flex gap-2">
-            <span className="w-3 h-3 bg-yellow-400 rounded-full"></span>
-            <span className="w-3 h-3 bg-yellow-300 rounded-full"></span>
-            <span className="w-3 h-3 bg-yellow-500 rounded-full"></span>
-          </div>
+          <ImageCarousel height="h-[500px]" />
         </div>
       </div>
     </div>
   );
-}
+};
 
 export default Register;
