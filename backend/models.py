@@ -23,7 +23,7 @@ class User(db.Model, SerializerMixin):
 
     user_post_interactions = db.relationship('UserPost', back_populates='user')
 
-    serialize_rules = ('-user_post_interactions.user', '-password_hash',)
+    serialize_rules = ('-user_post_interactions.user', )
 
     def __repr__(self):
         return (
