@@ -45,7 +45,7 @@ class RegisterUser(Resource):
         db.session.add(new_user)
         db.session.commit()
         encoded_jwt = jwt.encode({"username": new_user.username,"id":new_user.id}, "secret", algorithm="HS256")
-
+        # create a cookie
         response=make_response(
            {"token":encoded_jwt,"message":"User created successfully"},
            201
@@ -79,7 +79,7 @@ class RegisterRestaurant(Resource):
         )
         db.session.add(new_restaurant)
         db.session.commit()
-        encoded_jwt = jwt.encode({"name": new_restaurant.username,"id":new_restaurant.id}, "secret", algorithm="HS256")
+        encoded_jwt = jwt.encode({"name": new_restaurant.name,"id":new_restaurant.id}, "secret", algorithm="HS256")
 
         response=make_response(
            {"token":encoded_jwt,"message":"Restaurant created successfully"},
@@ -98,7 +98,7 @@ class LoginUser(Resource):
         if user and bcrypt.checkpw(password.encode('utf-8'), user.password_hash):
             encoded_jwt = jwt.encode({"username": user.username,"id":user.id}, "secret", algorithm="HS256")
             return make_response(
-                {"token":encoded_jwt,"message":f"Welcome Back {self.username}"},
+                {"token":encoded_jwt,"message":f"Welcome Back {user.username}"},
                 201
             )
         else:
@@ -115,7 +115,7 @@ class LoginRestaurant(Resource):
         if restaurant and bcrypt.checkpw(password.encode('utf-8'), restaurant.password_hash):
             encoded_jwt = jwt.encode({"name": restaurant.name,"id":restaurant.id}, "secret", algorithm="HS256")
             return make_response(
-                {"token":encoded_jwt,"message":f"Welcome Back {self.name}"},
+                {"token":encoded_jwt,"message":f"Welcome Back {restaurant.name}"},
                 201
             )
         else:
@@ -424,7 +424,9 @@ api.add_resource(RegisterRestaurant,'/api/restaurants/register')
 api.add_resource(LoginUser,'/api/users/login')
 api.add_resource(LoginRestaurant,'/api/restaurants/login')
 # Users
+api.add_resource(users,'/users')
 api.add_resource(User_by_id,'/users/<int:id>')
+api.add_resource(restaurants,'/restaurants')
 api.add_resource(Restaurant_by_id,'/restaurants/<int:id>')
 
 # Posts
