@@ -1,12 +1,14 @@
-import React from "react";
+import React, { useState } from "react";
 import LikeButton from "../Post/LikeButton";
 import FavouriteButton from "../Post/FavouriteButton";
 import ShareButton from "../Post/ShareButton";
 import OrderPanel from "../Post/OrderPanel";
 import CommentSection from "../Post/CommentSection";
 import CommentButton from "../Post/CommentButton"
+import PostModal from "./PostModal";
 
 const PostCard = ({ post }) => {
+  const [showModal, setShowModal] = useState(false);
   return (
     <div className="bg-white rounded-lg shadow-md mb-5">
       <div className="p-4">
@@ -33,15 +35,18 @@ const PostCard = ({ post }) => {
         <div className="flex justify-between items-center px-2 py-1">
           <div className="flex gap-4">
             <LikeButton postId={post.id} />
-            <CommentButton postId={post.id} />
+            <button onClick={() => setShowModal(true)}>
+              <CommentButton postId={post.id} />
+            </button>
             <ShareButton postId={post.id} />
           </div>
           <OrderPanel post={post} />
         </div>
         {/* hapa ni for Caption */}
-        {/* <p className="px-2 text-sm mt-1">{post.caption}</p> */}
+        <p className="px-2 text-sm mt-1">{post.caption}</p>
       </div>
       <CommentSection postId={post.id} />
+      <PostModal isOpen={showModal} onClose={() => setShowModal(false)} post={post} />
     </div>
   );
 };
