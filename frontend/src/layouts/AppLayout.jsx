@@ -1,6 +1,7 @@
 import React from "react";
 import { Link, Outlet } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
+import Sidebar from "../components/Sidebar";
 
 const AppLayout = () => {
   const { user, logout } = useAuth();
@@ -31,13 +32,13 @@ const AppLayout = () => {
         </div>
       </nav>
 
-      <main className="py-6 px-4 flex-1">
-        <Outlet />
-      </main>
+        <main className="py-6 px-4 ">    
+          <Outlet />
+        </main>
 
-      <footer className="bg-white text-center p-4 mt-auto text-sm text-gray-500">
-        © {new Date().getFullYear()} SavorySafari. All rights reserved.
-      </footer>
+        <footer className="bg-white text-center p-4 mt-auto text-sm text-gray-500">
+          © {new Date().getFullYear()} SavorySafari. All rights reserved.
+        </footer>
     </div>
   );
 };
