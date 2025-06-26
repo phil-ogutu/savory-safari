@@ -50,7 +50,7 @@ export default function Upload() {
   return (
     <div className="max-w-xl mx-auto px-10 py-8 bg-gray-100 rounded-xl">
       <h2 className="text-xl font-semibold mb-4 text-center">
-        Upload a new dish
+        Upload a new post
       </h2>
       <div className="mb-5 flex items-center justify-center w-full">
         <label
