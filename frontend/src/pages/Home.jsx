@@ -34,6 +34,22 @@ export default function Home() {
             media: ["/sample-food.jpg"],
             caption: "Sukuma wiki and ugali 🍽️",
           },
+          {
+            id: 1,
+            username: "benjie",
+            userAvatar: "/avatar.png",
+            location: "Nairobi",
+            media: ["/sample-food.jpg"],
+            caption: "Sukuma wiki and ugali 🍽️",
+          },
+          {
+            id: 1,
+            username: "benjie",
+            userAvatar: "/avatar.png",
+            location: "Nairobi",
+            media: ["/sample-food.jpg"],
+            caption: "Sukuma wiki and ugali 🍽️",
+          },
         ];
         setPosts(data);
       } catch (error) {
@@ -47,7 +63,7 @@ export default function Home() {
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-6">
-      <h1 className="text-2xl font-bold mb-4">SavorySafari Feed</h1>
+      {/* <h1 className="text-2xl font-bold mb-4">SavorySafari Feed</h1> */}
       {loading
         ? Array.from({ length: 3 }).map((_, i) => <PostSkeleton key={i} />)
         : posts.map((post) => <PostCard key={post.id} post={post} />)}

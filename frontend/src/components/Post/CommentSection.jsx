@@ -9,6 +9,8 @@ const CommentSection = ({ postId }) => {
   ]);
 
   const [newComment, setNewComment] = useState("");
+  const [showAll, setShowAll] = useState(false);
+
 
   const handleAddComment = () => {
     if (!newComment.trim()) return;
@@ -21,25 +23,39 @@ const CommentSection = ({ postId }) => {
     setNewComment("");
   };
 
+  const visibleComments = showAll ? comments : comments.slice(0, 1)
+
   return (
     <div className="px-2 pb-3">
-      <div className="space-y-1 mb-2 text-sm">
-        {comments.map((c) => (
+      <div className="flex px-2 mb-2 text-sm">
+        {visibleComments.map((c) => (
           <div key={c.id}>
             <strong>{c.username}: </strong>
             {c.content}
           </div>
         ))}
+        {comments.length > 1 && !showAll && (
+          <button
+            onClick={() => setShowAll(true)}
+            className="text-gray-600 text-m ml-5 hover:text-gray-800"
+          >
+            ...more
+          </button>
+        )}
       </div>
-      <div className="flex gap-2 mt-2">
-        <Input
+      <div className="flex items-center border-t pt-2 mt-2 text-sm">
+        <input
+          type="text"
           value={newComment}
           onChange={(e) => setNewComment(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter'){
+              handleAddComment()
+            }
+          }}
           placeholder="Add a comment..."
+          className="flex-1 outline-none border-none px-2 py-1 text-sm placeholder-gray-400"
         />
-        <Button onClick={handleAddComment} className="bg-black text-white">
-          Post
-        </Button>
       </div>
     </div>
   );
