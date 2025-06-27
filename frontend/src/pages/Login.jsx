@@ -1,18 +1,24 @@
+import React from "react";
 import { Formik, Form, Field } from "formik";
 import * as Yup from "yup";
-import YupPassword from "yup-password";
-import { Button } from "../components/UI/Button";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useSnackbar } from "notistack";
+import Button from "../components/UI/Button";
+import { Link } from "react-router-dom";
+import ImageCarousel from "../components/UI/ImageCarousel";
 
-YupPassword(Yup);
+// // Extend Yup with password validation
+// YupPassword(Yup);
 
 const validationSchema = Yup.object().shape({
   email: Yup.string().email("Invalid email").required("Email is required"),
   password: Yup.string().required("Password is required").min(6, "Min 6 chars"),
+  role: Yup.string()
+    .oneOf(["user", "restaurant"], "Select a role")
+    .required("Role is required"),
 });
 
-export default function Login({ setUser }) {
+const Login = ({ setUser }) => {
   const navigate = useNavigate();
   const { enqueueSnackbar } = useSnackbar();
 
@@ -25,10 +31,11 @@ export default function Login({ setUser }) {
         <p className="mb-6 text-orange-700">Login to your account</p>
 
         <Formik
-          initialValues={{ email: "", password: "" }}
+          initialValues={{ email: "", password: "", role: "" }}
           validationSchema={validationSchema}
           onSubmit={(values, actions) => {
             fetch("https://example.com/login_user", {
+              // Replace with your actual API URL
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify(values),
@@ -82,6 +89,24 @@ export default function Login({ setUser }) {
                 )}
               </div>
 
+              <div>
+                <label className="block text-sm text-orange-700">
+                  Login as
+                </label>
+                <Field
+                  as="select"
+                  name="role"
+                  className="w-full p-2 border rounded"
+                >
+                  <option value="">Select Role</option>
+                  <option value="user">User</option>
+                  <option value="restaurant">Restaurant</option>
+                </Field>
+                {errors.role && touched.role && (
+                  <div className="text-red-600 text-sm">{errors.role}</div>
+                )}
+              </div>
+
               <div className="flex items-center justify-between text-sm text-orange-700">
                 <label className="flex items-center">
                   <input type="checkbox" className="mr-1" /> Remember Me
@@ -103,24 +128,10 @@ export default function Login({ setUser }) {
       </div>
 
       <div className="hidden md:flex w-1/2 justify-center items-center bg-white">
-        <div className="text-center">
-          <h1 className="text-4xl font-bold text-orange-700 mb-4">
-            savorySafari
-          </h1>
-          <p className="text-2xl font-bold text-orange-600">
-            Some content / images
-          </p>
-          <p className="text-2xl font-bold text-orange-600">
-            carousels of food
-          </p>
-          <p className="text-sm text-yellow-500 mt-4">some inspos goes here</p>
-          <div className="flex justify-center mt-2 space-x-1">
-            <span className="w-2 h-2 rounded-full bg-yellow-400"></span>
-            <span className="w-2 h-2 rounded-full bg-yellow-400"></span>
-            <span className="w-2 h-2 rounded-full bg-yellow-400"></span>
-          </div>
-        </div>
+        <ImageCarousel height="h-[700px]" />
       </div>
     </div>
   );
-}
+};
+
+export default Login;
