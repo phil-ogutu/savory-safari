@@ -2,12 +2,25 @@ import React from "react";
 import { Link, Outlet } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import Sidebar from "../components/Sidebar";
+import { ToastContainer } from 'react-toastify';
 
 const AppLayout = () => {
   const { user, logout } = useAuth();
 
   return (
     <div className="min-h-screen bg-gray-50">
+      <ToastContainer
+        position="top-right"
+        autoClose={5000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick={false}
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="light"
+      />
       <nav className="bg-white shadow p-4 flex justify-between items-center">
         <Link to="/" className="text-xl font-bold">
           SavorySafari
