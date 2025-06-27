@@ -235,6 +235,23 @@ class Restaurant_by_id(Resource):
 
 class Posts(Resource):
     def get(self):
+        location = request.args.get('location')
+        category = request.args.get('category')
+        type_food = request.args.get('type_food')
+
+        query = Post.query
+
+        # Dynamically add filters if query params are provided
+        if location:
+            query = query.filter(Post.location_tag == location)
+        if category:
+            query = query.filter(Post.category == category)
+        if type_food:
+            query = query.filter(Post.type_food == type_food)
+
+        # Run the query
+        posts = query.order_by(Post.created_at.desc()).all()
+
         posts=[{
             "restaurant": {
                 "id": post.restaurant.id,
@@ -250,7 +267,7 @@ class Posts(Resource):
             "id": post.id,
             "likes": len({interaction.user_id for interaction in post.user_post_interactions if interaction.liked}),
             "comments": [{"user": interaction.user.username, "content": interaction.comment.content,"created_at":interaction.comment.created_at} for interaction in post.user_post_interactions if interaction.comment_id is not None],
-        } for post in Post.query.order_by(Post.created_at.desc()).all()]
+        } for post in posts]
         response=make_response(
             jsonify(posts),
             200        
