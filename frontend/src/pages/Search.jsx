@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import useFetch from '../hooks/custom/useFetch.hook';
 
-function Explore() {
+function Search() {
     const [keyword,set_keyword]=useState('');
     const { data:posts, FetchData } = useFetch(`http://localhost:5000/api/posts?category=${keyword}`);
     useEffect(() => {
@@ -27,4 +27,4 @@ function Explore() {
     )
 };
 
-export default Explore;
+export default Search;
