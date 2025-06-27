@@ -2,6 +2,9 @@ import React from "react";
 import { Description, Dialog, DialogPanel, DialogTitle } from '@headlessui/react'
 import { XMarkIcon } from "@heroicons/react/24/outline";
 import CommentSection from "../Post/CommentSection";
+import { timeAgo } from '../utilities.js'
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faCircleDot } from "@fortawesome/free-regular-svg-icons";
 
 const PostModal = ({ isOpen, onClose, post }) => {
   if (!post) return null;
@@ -15,15 +18,16 @@ const PostModal = ({ isOpen, onClose, post }) => {
           </button>
 
           {/* Post Header */}
-          <div className="flex items-center gap-2 mb-4">
-            <img src={post.userAvatar} alt="avatar" className="w-10 h-10 rounded-full" />
-            <div>
-              <p className="font-semibold">{post.username}</p>
-              <p className="text-sm text-gray-500">{post.location}</p>
+          <div className="ml-2">
+            <div className="flex align-center gap-2 items-center">
+              <p className="font-semibold text-lg">{post?.restaurant?.name}</p> 
+              <FontAwesomeIcon icon ={faCircleDot} size="xs"/> 
+              <p className="text-xs">{timeAgo(post?.created_at)}</p>
             </div>
+            <span className="text-sm text-gray-500">{post?.location_tag}</span>
           </div>
           {/* Comments Section */}
-          <CommentSection postId={post.id} />
+          <CommentSection postId={post.id} post_comments={post.comments}/>
         </DialogPanel>
       </div>
     </Dialog>

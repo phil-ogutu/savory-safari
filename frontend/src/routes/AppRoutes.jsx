@@ -1,6 +1,5 @@
 import React from "react";
-import { Routes, Route } from "react-router-dom";
-import AppLayout from "../layouts/AppLayout";
+import { Routes, Route, Navigate } from "react-router-dom";
 import Home from "../pages/Home";
 import Explore from "../pages/Explore";
 import Search from "../pages/Search";
@@ -12,18 +11,21 @@ import UserSettings from "../pages/userSettings";
 import RestaurantSettings from "../pages/restaurantSettings";
 import Profile from "../pages/Profile";
 import NotFound from "../pages/NotFound";
-import ProtectedRoute from "../components/ProtectedRoute";
+import ProtectedRoute from "./ProtectedRoute";
+import { AppLayout } from "../layouts/AppLayout";
 
 const AppRoutes = () => {
   return (
     <Routes>
-      {/* here are the Authentication routes */}
+      {/* Redirect root to /login */}
+      <Route path="/" element={<Navigate to="/login" replace />} />
+
+      {/* Authentication routes */}
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
-
       {/* Protected routes are wrapped in AppLayout */}
       <Route element={<AppLayout />}>
-        <Route index element={<Home />} />
+        <Route path="/home" element={<Home />} />
         <Route path="/explore" element={<Explore />} />
         <Route path="/search" element={<Search />} />
         <Route path="/post/:id" element={<PostDetails />} />
@@ -33,13 +35,13 @@ const AppRoutes = () => {
         <Route
           path="/upload"
           element={
-            <ProtectedRoute>
-              <Upload />
-            </ProtectedRoute>
+            <Upload />
+            // <ProtectedRoute>
+            //   <Upload />
+            // </ProtectedRoute>
           }
         />
       </Route>
-
       {/* Fallback ama default route */}
       <Route path="*" element={<NotFound />} />
     </Routes>

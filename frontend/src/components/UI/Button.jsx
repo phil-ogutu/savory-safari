@@ -23,3 +23,5 @@ export const Button = ({ content, className, type = "button", onClick, disabled=
     </button>
   );
 };
+
+export default Button;

@@ -23,8 +23,6 @@ class RegisterUser(Resource):
         username=data['username']
         email=data['email']
         mobile=data['mobile']
-        user_bio=data['user_bio']
-        photo_url=data['photo_url']
         password=data['password']
         
         if username == None and email == None and password == None:
@@ -38,8 +36,8 @@ class RegisterUser(Resource):
             username=username,
             email=email,
             mobile=mobile,
-            user_bio=user_bio,
-            photo_url=photo_url,
+            user_bio="",
+            photo_url="",
             password_hash=password_hash
         )
         db.session.add(new_user)
@@ -55,11 +53,9 @@ class RegisterUser(Resource):
 class RegisterRestaurant(Resource):
     def post(self):
         data=request.get_json()
-        name=data['name']
+        name=data['username']
         email=data['email']
         mobile=data['mobile']
-        restaurant_bio=data['restaurant_bio']
-        photo_url=data['photo_url']
         password=data['password']
         
         if name == None and email == None and password == None:
@@ -73,8 +69,8 @@ class RegisterRestaurant(Resource):
             name=name,
             email=email,
             mobile=mobile,
-            restaurant_bio=restaurant_bio,
-            photo_url=photo_url,
+            restaurant_bio="",
+            photo_url="",
             password_hash=password_hash
         )
         db.session.add(new_restaurant)
@@ -235,6 +231,23 @@ class Restaurant_by_id(Resource):
 
 class Posts(Resource):
     def get(self):
+        location = request.args.get('location')
+        category = request.args.get('category')
+        type_food = request.args.get('type_food')
+
+        query = Post.query
+
+        # Dynamically add filters if query params are provided
+        if location:
+            query = query.filter(Post.location_tag == location)
+        if category:
+            query = query.filter(Post.category == category)
+        if type_food:
+            query = query.filter(Post.type_food == type_food)
+
+        # Run the query
+        posts = query.order_by(Post.created_at.desc()).all()
+
         posts=[{
             "restaurant": {
                 "id": post.restaurant.id,
@@ -247,9 +260,10 @@ class Posts(Resource):
             "type_food": post.type_food,
             "category": post.category,
             "created_at": post.created_at,
+            "id": post.id,
             "likes": len({interaction.user_id for interaction in post.user_post_interactions if interaction.liked}),
             "comments": [{"user": interaction.user.username, "content": interaction.comment.content,"created_at":interaction.comment.created_at} for interaction in post.user_post_interactions if interaction.comment_id is not None],
-        } for post in Post.query.all()]
+        } for post in posts]
         response=make_response(
             jsonify(posts),
             200        
@@ -324,7 +338,7 @@ class PostById(Resource):
             data = request.get_json()
             user_id = data['user_id']
             content = data['content']
-            recent_interaction = post.user_post_interactions[-1]
+            recent_interaction = post.user_post_interactions[-1] if post.user_post_interactions else None
             if content is not None:
                 # we are creating a new comment 
                 # save a comment to db
@@ -339,7 +353,7 @@ class PostById(Resource):
                     user_id = user_id,
                     post_id = id,
                     comment_id=new_comment.id,
-                    liked=recent_interaction.liked 
+                    liked=recent_interaction.liked if recent_interaction else False 
                 )
                 db.session.add(new_interaction)
                 db.session.commit()
