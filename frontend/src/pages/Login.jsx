@@ -1,21 +1,24 @@
+import React from "react";
 import { Formik, Form, Field } from "formik";
 import * as Yup from "yup";
-import YupPassword from "yup-password";
-import { Button } from "../components/UI/Button";
-import { useNavigate, Link } from "react-router-dom";
-import { useSnackbar } from "notistack";
+import { useNavigate } from "react-router-dom";
+import Button from "../components/UI/Button";
+import { Link } from "react-router-dom";
+import ImageCarousel from "../components/UI/ImageCarousel";
+import { toast } from "react-toastify";
 
-YupPassword(Yup);
+// YupPassword(Yup);
 
 const validationSchema = Yup.object().shape({
   email: Yup.string().email("Invalid email").required("Email is required"),
-  password: Yup.string().required("Password is required").min(6, "Min 6 chars"),
+  password: Yup.string().required("Password is required").min(4, "Min 6 chars"),
+  role: Yup.string()
+    .oneOf(["user", "restaurant"], "Select a role")
+    .required("Role is required"),
 });
 
-export default function Login({ setUser }) {
+const Login = ({ setUser }) => {
   const navigate = useNavigate();
-  const { enqueueSnackbar } = useSnackbar();
-
   return (
     <div className="flex h-screen">
       <div className="w-full md:w-1/2 flex flex-col justify-center items-center bg-yellow-100 p-8 rounded-l-3xl">
@@ -25,31 +28,30 @@ export default function Login({ setUser }) {
         <p className="mb-6 text-orange-700">Login to your account</p>
 
         <Formik
-          initialValues={{ email: "", password: "" }}
+          initialValues={{ email: "", password: "", role: "" }}
           validationSchema={validationSchema}
           onSubmit={(values, actions) => {
-            fetch("https://example.com/login_user", {
+            console.log(values)
+            fetch(`http://localhost:5000/api/${values.role}s/login`, {
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify(values),
             })
               .then((res) => {
                 if (res.status === 201) {
-                  enqueueSnackbar("Login successful!", { variant: "success" });
+                  toast.success("Login successful!");
+                  navigate("/home");
                   return res.json();
                 }
                 return res.json().then((data) => {
-                  enqueueSnackbar(data.message || "Login failed", {
-                    variant: "error",
-                  });
+                  console.log(data)
+                  toast.error("Login failed!");
                 });
               })
-              .then((user) => {
-                setUser(user);
-                navigate("/");
-              })
-              .catch(() =>
-                enqueueSnackbar("Network error", { variant: "error" })
+              .catch((err) =>{
+                  console.error(err)
+                  toast.error(`Login failed!${err}`)
+                }
               )
               .finally(() => actions.resetForm());
           }}
@@ -82,6 +84,24 @@ export default function Login({ setUser }) {
                 )}
               </div>
 
+              <div>
+                <label className="block text-sm text-orange-700">
+                  Login as
+                </label>
+                <Field
+                  as="select"
+                  name="role"
+                  className="w-full p-2 border rounded"
+                >
+                  <option value="">Select Role</option>
+                  <option value="user">User</option>
+                  <option value="restaurant">Restaurant</option>
+                </Field>
+                {errors.role && touched.role && (
+                  <div className="text-red-600 text-sm">{errors.role}</div>
+                )}
+              </div>
+
               <div className="flex items-center justify-between text-sm text-orange-700">
                 <label className="flex items-center">
                   <input type="checkbox" className="mr-1" /> Remember Me
@@ -89,7 +109,7 @@ export default function Login({ setUser }) {
                 <Link to="#">Forgot password?</Link>
               </div>
 
-              <Button content="Login" className="w-full" />
+              <Button content="Login" className="w-full" type="submit"/>
 
               <Link
                 to="/register"
@@ -103,24 +123,10 @@ export default function Login({ setUser }) {
       </div>
 
       <div className="hidden md:flex w-1/2 justify-center items-center bg-white">
-        <div className="text-center">
-          <h1 className="text-4xl font-bold text-orange-700 mb-4">
-            savorySafari
-          </h1>
-          <p className="text-2xl font-bold text-orange-600">
-            Some content / images
-          </p>
-          <p className="text-2xl font-bold text-orange-600">
-            carousels of food
-          </p>
-          <p className="text-sm text-yellow-500 mt-4">some inspos goes here</p>
-          <div className="flex justify-center mt-2 space-x-1">
-            <span className="w-2 h-2 rounded-full bg-yellow-400"></span>
-            <span className="w-2 h-2 rounded-full bg-yellow-400"></span>
-            <span className="w-2 h-2 rounded-full bg-yellow-400"></span>
-          </div>
-        </div>
+        <ImageCarousel height="h-[700px]" />
       </div>
     </div>
   );
-}
+};
+
+export default Login;

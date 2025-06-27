@@ -23,8 +23,6 @@ class RegisterUser(Resource):
         username=data['username']
         email=data['email']
         mobile=data['mobile']
-        user_bio=data['user_bio']
-        photo_url=data['photo_url']
         password=data['password']
         
         if username == None and email == None and password == None:
@@ -38,8 +36,8 @@ class RegisterUser(Resource):
             username=username,
             email=email,
             mobile=mobile,
-            user_bio=user_bio,
-            photo_url=photo_url,
+            user_bio="",
+            photo_url="",
             password_hash=password_hash
         )
         db.session.add(new_user)
@@ -55,11 +53,9 @@ class RegisterUser(Resource):
 class RegisterRestaurant(Resource):
     def post(self):
         data=request.get_json()
-        name=data['name']
+        name=data['username']
         email=data['email']
         mobile=data['mobile']
-        restaurant_bio=data['restaurant_bio']
-        photo_url=data['photo_url']
         password=data['password']
         
         if name == None and email == None and password == None:
@@ -73,8 +69,8 @@ class RegisterRestaurant(Resource):
             name=name,
             email=email,
             mobile=mobile,
-            restaurant_bio=restaurant_bio,
-            photo_url=photo_url,
+            restaurant_bio="",
+            photo_url="",
             password_hash=password_hash
         )
         db.session.add(new_restaurant)
@@ -342,7 +338,7 @@ class PostById(Resource):
             data = request.get_json()
             user_id = data['user_id']
             content = data['content']
-            recent_interaction = post.user_post_interactions[-1]
+            recent_interaction = post.user_post_interactions[-1] if post.user_post_interactions else None
             if content is not None:
                 # we are creating a new comment 
                 # save a comment to db
@@ -357,7 +353,7 @@ class PostById(Resource):
                     user_id = user_id,
                     post_id = id,
                     comment_id=new_comment.id,
-                    liked=recent_interaction.liked 
+                    liked=recent_interaction.liked if recent_interaction else False 
                 )
                 db.session.add(new_interaction)
                 db.session.commit()

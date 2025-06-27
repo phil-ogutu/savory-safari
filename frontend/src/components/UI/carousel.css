@@ -1,0 +1,15 @@
+/* carousel.css */
+.swiper-pagination {
+  @apply flex justify-center items-center gap-2 mt-6 p-4;
+  position: relative !important;
+  bottom: 0 !important;
+  margin-top: 1.5rem !important; /* Ensure space below image */
+}
+
+.swiper-pagination-bullet {
+  @apply w-4 h-4 rounded-full bg-yellow-300 opacity-60 transition-all duration-300;
+}
+
+.swiper-pagination-bullet-active {
+  @apply bg-orange opacity-100 scale-110;
+}
