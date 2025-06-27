@@ -27,8 +27,8 @@ const CommentSection = ({ postId, post_comments }) => {
   return (
     <div className="px-2 pb-3">
       <div className="flex px-2 mb-2 text-sm flex-col h-100">
-        {visibleComments.map((c) => (
-          <div key={c.id}>
+        {visibleComments.map((c,idx) => (
+          <div key={c.id || idx}>
             <strong>{c.user}: </strong>
             {c.content}
           </div>

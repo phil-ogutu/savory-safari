@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import { Input } from "../components/UI/Input";
 import { Button } from "../components/UI/Button";
+import usePost from "../hooks/custom/usePost.hook";
+import { ToastContainer, toast } from 'react-toastify';
 
 export default function Upload() {
   const [caption, setCaption] = useState("");
@@ -9,42 +11,43 @@ export default function Upload() {
   const [type, setType] = useState("");
   const [price, setPrice] = useState("");
   const [selectedFile, setSelectedFile] = useState(null);
+  const {PostData, message} = usePost(`http://localhost:5000/api/posts`);
 
   const handleSubmit = (e) => {
-    e.preventDefault()
-
+    e.preventDefault();
     if (!selectedFile) {
       alert("Please upload file")
       return
-    }
-
+    };
     const formData = new FormData();
-    formData.append("file", selectedFile);
+    // formData.append("media_file", selectedFile);
+    formData.append("media_file", 'https://i.pinimg.com/736x/fe/b8/87/feb887802c311ebaf4c3d6ee9509f033.jpg');
     formData.append("caption", caption);
-    formData.append("location", location);
+    formData.append("location_tag", location);
     formData.append("category", category);
-    formData.append("type", type);
+    formData.append("type_food", type);
     formData.append("price", price);
-
-    fetch("http://endpoint", { method: "POST", body: formData })
-      .then((res) => {
-        if (!res.ok) throw new Error("Upload failed");
-        return res.json();
-      })
-      .then((data) => {
-        alert("Upload successful!");
-        console.log(data);
-        setCaption("");
-        setLocation("");
-        setCategory("");
-        setType("");
-        setPrice("");
-        setSelectedFile(null);
-      })
-      .catch((err) => {
-        console.error(err);
-        alert("Upload error");
-      });
+    formData.append("restaurant_id", 1);
+    const payload = {
+      media_file: 'https://i.pinimg.com/736x/fe/b8/87/feb887802c311ebaf4c3d6ee9509f033.jpg',
+      caption,
+      location_tag: location,
+      category,
+      type_food: type,
+      price,
+      restaurant_id: 1
+    }
+    PostData(payload).then(()=>{
+      setCaption("");
+      setLocation("");
+      setCategory("");
+      setType("");
+      setPrice("");
+      // reload page
+      toast.success(message);
+    }).catch((err)=>{
+      console.error(err);
+    });
   };
 
   return (

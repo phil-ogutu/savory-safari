@@ -250,7 +250,7 @@ class Posts(Resource):
             "id": post.id,
             "likes": len({interaction.user_id for interaction in post.user_post_interactions if interaction.liked}),
             "comments": [{"user": interaction.user.username, "content": interaction.comment.content,"created_at":interaction.comment.created_at} for interaction in post.user_post_interactions if interaction.comment_id is not None],
-        } for post in Post.query.all()]
+        } for post in Post.query.order_by(Post.created_at.desc()).all()]
         response=make_response(
             jsonify(posts),
             200        

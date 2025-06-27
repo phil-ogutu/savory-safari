@@ -8,7 +8,7 @@ import CommentButton from "../Post/CommentButton"
 import PostModal from "./PostModal";
 import { timeAgo } from '../utilities.js'
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faCircleDot } from "@fortawesome/free-regular-svg-icons";
+import { faCircleDot, faComment } from "@fortawesome/free-regular-svg-icons";
 
 const PostCard = ({ post }) => {
   const [showModal, setShowModal] = useState(false);
@@ -37,7 +37,7 @@ const PostCard = ({ post }) => {
         <div className="w-full h-64 bg-gray-100 mb-2 overflow-hidden rounded">
           <img
             src={
-              // post.media_url || 
+              post.media_url || 
               'https://i.pinimg.com/736x/8f/c6/3e/8fc63ecde415fc7e8119ee2b46c07be9.jpg'}
             alt="media"
             className="w-full h-full object-cover"
@@ -47,8 +47,8 @@ const PostCard = ({ post }) => {
         <div className="flex justify-between items-center px-2 py-1">
           <div className="flex gap-4">
             <LikeButton postId={post?.id} />
-            <button onClick={() => setShowModal(true)}>
-              <CommentButton postId={post?.id} />
+            <button className="text-gray-600 hover:text-gray-700 text-2xl">
+              <FontAwesomeIcon icon ={faComment} onClick={() => setShowModal(true)}/>
             </button>
             <ShareButton postId={post?.id} />
           </div>
