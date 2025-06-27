@@ -6,6 +6,8 @@ import { Button } from "../components/UI/Button";
 import { useNavigate } from "react-router-dom";
 import { useSnackbar } from "notistack";
 import ImageCarousel from "../components/UI/ImageCarousel";
+import { toast } from "react-toastify";
+
 
 // Extend Yup with password validation
 YupPassword(Yup);
@@ -43,28 +45,29 @@ const Register = () => {
               role: "",
             }}
             validationSchema={validationSchema}
-            onSubmit={(values) => {
-              fetch("https://example.com/signup_user", {
-                // Replace with your actual API URL
+            onSubmit={(values,actions) => {
+              fetch(`http://localhost:5000/api/${values.role}s/register`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(values),
               })
                 .then((res) => {
                   if (res.status === 201) {
-                    enqueueSnackbar("Signed up successfully", {
-                      variant: "success",
-                    });
-                    navigate("/login");
-                  } else {
-                    enqueueSnackbar("Something went wrong", {
-                      variant: "error",
-                    });
+                    toast.success("Login successful!");
+                    navigate("/home");
+                    return res.json();
                   }
+                  return res.json().then((data) => {
+                    console.log(data)
+                    toast.error("Login failed!");
+                  });
                 })
-                .catch(() =>
-                  enqueueSnackbar("Network error", { variant: "error" })
-                );
+                .catch((err) =>{
+                    console.error(err)
+                    toast.error(`Login failed!${err}`)
+                  }
+                )
+                .finally(() => actions.resetForm());
             }}
           >
             {({ errors, touched }) => (
@@ -172,7 +175,7 @@ const Register = () => {
                   </button>
                 </div>
 
-                <Button content="Create Account" className="w-full" />
+                <Button content="Create Account" className="w-full" type="submit"/>
 
                 <div
                   onClick={() => navigate("/login")}
