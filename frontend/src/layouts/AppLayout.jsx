@@ -14,21 +14,8 @@ import { ToastContainer } from 'react-toastify';
 
 const AppLayout = () => {
   const { user, logout } = useAuth();
-
   return (
     <div className="min-h-screen bg-gray-50">
-      <ToastContainer
-        position="top-right"
-        autoClose={5000}
-        hideProgressBar={false}
-        newestOnTop={false}
-        closeOnClick={false}
-        rtl={false}
-        pauseOnFocusLoss
-        draggable
-        pauseOnHover
-        theme="light"
-      />
       {/* Desktop Layout */}
       <div className="hidden lg:flex">
         <Sidebar userName={user?.name || "Guest"} />
