@@ -154,12 +154,7 @@ export default function Upload() {
             required
           />
         </div>
-        <button
-          type="submit"
-          className="col-span-2 text-white bg-blue-700 hover:bg-blue-800 font-medium rounded-lg text-sm w-full px-5 py-2.5 text-center"
-        >
-          Upload
-        </button>
+        <Button content="Upload" type="submit" className="w-full col-span-2" />
       </form>
     </div>
   );

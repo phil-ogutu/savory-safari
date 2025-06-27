@@ -6,6 +6,9 @@ import OrderPanel from "../Post/OrderPanel";
 import CommentSection from "../Post/CommentSection";
 import CommentButton from "../Post/CommentButton"
 import PostModal from "./PostModal";
+import { timeAgo } from '../utilities.js'
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faCircleDot } from "@fortawesome/free-regular-svg-icons";
 
 const PostCard = ({ post }) => {
   const [showModal, setShowModal] = useState(false);
@@ -14,19 +17,28 @@ const PostCard = ({ post }) => {
       <div className="p-4">
         <div className="flex items-center gap-2 mb-2">
           <img
-            src={post.userAvatar}
+            src={
+              post?.restaurant?.photo_url ||
+              'https://i.pinimg.com/736x/8b/36/9f/8b369fefca44952ef36cc09f830c00e7.jpg'
+            }
             alt="avatar"
             className="w-8 h-8 rounded-full"
           />
           <div className="ml-2">
-            <p className="font-semibold">{post.username}</p>
-            <span className="text-sm text-gray-500">{post.location}</span>
+            <div className="flex align-center gap-2 items-center">
+              <p className="font-semibold text-lg">{post?.restaurant?.name}</p> 
+              <FontAwesomeIcon icon ={faCircleDot} size="xs"/> 
+              <p className="text-xs">{timeAgo(post?.created_at)}</p>
+            </div>
+            <span className="text-sm text-gray-500">{post?.location_tag}</span>
           </div>
         </div>
         {/* for Post Image(s) or Video */}
         <div className="w-full h-64 bg-gray-100 mb-2 overflow-hidden rounded">
           <img
-            src={post.media[0]}
+            src={
+              // post.media_url || 
+              'https://i.pinimg.com/736x/8f/c6/3e/8fc63ecde415fc7e8119ee2b46c07be9.jpg'}
             alt="media"
             className="w-full h-full object-cover"
           />
@@ -34,18 +46,18 @@ const PostCard = ({ post }) => {
         {/* hizi ni Action Buttons */}
         <div className="flex justify-between items-center px-2 py-1">
           <div className="flex gap-4">
-            <LikeButton postId={post.id} />
+            <LikeButton postId={post?.id} />
             <button onClick={() => setShowModal(true)}>
-              <CommentButton postId={post.id} />
+              <CommentButton postId={post?.id} />
             </button>
-            <ShareButton postId={post.id} />
+            <ShareButton postId={post?.id} />
           </div>
-          <OrderPanel post={post} />
+          {/* <OrderPanel post={post} /> */}
         </div>
         {/* hapa ni for Caption */}
-        <p className="px-2 text-sm mt-1">{post.caption}</p>
+        <p className="text-sm mt-1">caption: {post?.caption}</p>
       </div>
-      <CommentSection postId={post.id} />
+      <CommentSection postId={post?.id} post_comments={post.comments}/>
       <PostModal isOpen={showModal} onClose={() => setShowModal(false)} post={post} />
     </div>
   );
