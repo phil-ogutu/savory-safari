@@ -89,7 +89,7 @@ with app.app_context():
         caption = fake.text(max_nb_chars=50)
         media_url = fake.image_url()
         location_tag = fake.city()
-        price = fake.random_int(min=100, max=1000)
+        price = fake.random_int(min=100, max=8000)
         type_food = fake.word()
         category = fake.word()
         post = Post(restaurant=restaurant, caption=caption, media_url=media_url, location_tag=location_tag, price=price, type_food=type_food, category=category)
@@ -101,7 +101,7 @@ with app.app_context():
     # Seed Comments
     comments = []
     for _ in range(20):
-        content = fake.text(max_nb_chars=50)
+        content = fake.text(max_nb_chars=200)
         comment = Comment(content=content)
         comments.append(comment)
 
@@ -121,4 +121,4 @@ with app.app_context():
     db.session.add_all(user_posts)
     db.session.commit()
 
-    print("Seeding complete!")
+    print("Database Seeding complete!")
