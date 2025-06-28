@@ -9,9 +9,13 @@ import jwt
 app=Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI']='sqlite:///savory-safari.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.config['SECRET_KEY'] = 'secret'  # used for JWT encoding/decoding
 app.json.compact=False
 
-CORS(app)
+# Corrected CORS to allow specific origin and credentials (cookies)
+CORS(app, origins=["http://localhost:3000"], supports_credentials=True)
+# Replace http://localhost:3000 with your frontend URL in production
+
 migrate=Migrate(app,db)
 db.init_app(app)
 
@@ -44,12 +48,22 @@ class RegisterUser(Resource):
         )
         db.session.add(new_user)
         db.session.commit()
+
+        # encode the jwt token
         encoded_jwt = jwt.encode({"username": new_user.username,"id":new_user.id}, "secret", algorithm="HS256")
-        # create a cookie
         response=make_response(
            {"token":encoded_jwt,"message":"User created successfully"},
            201
         )
+        # create a cookie
+        response.set_cookie(
+            'token',  # cookie name
+            encoded_jwt,  # cookie value
+            httponly=True,  # prevent JS access
+            samesite='Lax',  # adjust depending on cross-site needs
+            secure=False  # set to True if using HTTPS in production
+        )
+
         return response
     
 class RegisterRestaurant(Resource):
@@ -101,8 +115,19 @@ class LoginUser(Resource):
                 {"token":encoded_jwt,"message":f"Welcome Back {user.username}"},
                 201
             )
+        #Set token in cookie upon login
+        response.set_cookie(
+                'token',
+                encoded_jwt,
+                httponly=True,
+                samesite='Lax',
+                secure=False
+            )
+            return response
+    
         else:
             return make_response('Invalid credentials', 400)
+        
         
 class LoginRestaurant(Resource):
     def post(self):
