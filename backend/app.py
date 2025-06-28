@@ -50,7 +50,7 @@ class RegisterUser(Resource):
         db.session.commit()
 
         # encode the jwt token
-        encoded_jwt = jwt.encode({"username": new_user.username,"id":new_user.id}, "secret", algorithm="HS256")
+        encoded_jwt = jwt.encode({"username": new_user.username,"id":new_user.id}, app.config['SECRET_KEY'], algorithm="HS256")
         response=make_response(
            {"token":encoded_jwt,"message":"User created successfully"},
            201
@@ -93,11 +93,15 @@ class RegisterRestaurant(Resource):
         )
         db.session.add(new_restaurant)
         db.session.commit()
-        encoded_jwt = jwt.encode({"name": new_restaurant.name,"id":new_restaurant.id}, "secret", algorithm="HS256")
+        encoded_jwt = jwt.encode({"name": new_restaurant.name,"id":new_restaurant.id}, app.config['SECRET_KEY'], algorithm="HS256")
 
         response=make_response(
            {"token":encoded_jwt,"message":"Restaurant created successfully"},
            201
+        )
+        # create a cookie
+        response.set_cookie(
+            'token',encoded_jwt,httponly=True,samesite='Lax',secure=False
         )
         return response
     
@@ -110,19 +114,22 @@ class LoginUser(Resource):
         user = User.query.filter_by(email=email).first()
         
         if user and bcrypt.checkpw(password.encode('utf-8'), user.password_hash):
-            encoded_jwt = jwt.encode({"username": user.username,"id":user.id}, "secret", algorithm="HS256")
-            return make_response(
-                {"token":encoded_jwt,"message":f"Welcome Back {user.username}"},
+            encoded_jwt = jwt.encode({"username": user.username,"id":user.id}, app.config['SECRET_KEY'], algorithm="HS256")
+            # Create a response object
+            response = make_response(
+                {"token": encoded_jwt, "message": f"Welcome Back {user.username}"},
                 201
             )
-        #Set token in cookie upon login
-        response.set_cookie(
+            
+            # Set token in cookie upon login
+            response.set_cookie(
                 'token',
                 encoded_jwt,
                 httponly=True,
                 samesite='Lax',
                 secure=False
             )
+            
             return response
     
         else:
@@ -138,11 +145,20 @@ class LoginRestaurant(Resource):
         restaurant = Restaurant.query.filter_by(email=email).first()
         
         if restaurant and bcrypt.checkpw(password.encode('utf-8'), restaurant.password_hash):
-            encoded_jwt = jwt.encode({"name": restaurant.name,"id":restaurant.id}, "secret", algorithm="HS256")
-            return make_response(
-                {"token":encoded_jwt,"message":f"Welcome Back {restaurant.name}"},
+            encoded_jwt = jwt.encode({"name": restaurant.name,"id":restaurant.id}, app.config['SECRET_KEY'], algorithm="HS256")
+            response = make_response(
+                {"token": encoded_jwt, "message": f"Welcome Back {restaurant.name}"},
                 201
             )
+            # Set token in cookie upon login
+            response.set_cookie(
+                'token',
+                encoded_jwt,
+                httponly=True,
+                samesite='Lax',
+                secure=False
+            )
+            return response
         else:
             return make_response('Invalid credentials', 400)
 
@@ -457,10 +473,42 @@ class PostById(Resource):
             return make_response({'message': 'Post deleted successfully'}, 200)
         return make_response({'error': 'Post not found'}, 404)
 
+# Main route
 @app.route('/')
 def index():
     return make_response('Oh yes, It is our social app',200)
 
+# Logout endpoint
+# This endpoint clears the cookie to log out the user
+@app.route('/api/users/logout', methods=['POST'])
+def logout_user():
+    response = make_response({"message": "Logged out successfully"}, 200)
+    response.set_cookie(
+        'token',
+        '',  # clear cookie value
+        expires=0,  # expire immediately
+        httponly=True,
+        samesite='Lax',
+        secure=False
+    )
+    return response
+
+# Logout endpoint for restaurants
+# This endpoint clears the cookie to log out the restaurant
+@app.route('/api/restaurants/logout', methods=['POST'])
+def logout_restaurant():
+    response = make_response({"message": "Restaurant logged out successfully"}, 200)
+    response.set_cookie(
+        'token',
+        '',
+        expires=0,
+        httponly=True,
+        samesite='Lax',
+        secure=False
+    )
+    return response
+
+# Register the API routes
 # Users endpoints
 api.add_resource(RegisterUser,'/api/users/register')
 api.add_resource(RegisterRestaurant,'/api/restaurants/register')
