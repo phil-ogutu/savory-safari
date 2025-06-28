@@ -50,7 +50,7 @@ class RegisterUser(Resource):
         db.session.commit()
 
         # encode the jwt token
-        encoded_jwt = jwt.encode({"username": new_user.username,"id":new_user.id}, app.config['SECRET_KEY'], algorithm="HS256")
+        encoded_jwt = jwt.encode({"username": new_user.username,"id":new_user.id}, 'secret', algorithm="HS256")
         response=make_response(
            {"token":encoded_jwt,"message":"User created successfully"},
            201
@@ -93,7 +93,7 @@ class RegisterRestaurant(Resource):
         )
         db.session.add(new_restaurant)
         db.session.commit()
-        encoded_jwt = jwt.encode({"name": new_restaurant.name,"id":new_restaurant.id}, app.config['SECRET_KEY'], algorithm="HS256")
+        encoded_jwt = jwt.encode({"name": new_restaurant.name,"id":new_restaurant.id}, 'secret', algorithm="HS256")
 
         response=make_response(
            {"token":encoded_jwt,"message":"Restaurant created successfully"},
@@ -114,7 +114,7 @@ class LoginUser(Resource):
         user = User.query.filter_by(email=email).first()
         
         if user and bcrypt.checkpw(password.encode('utf-8'), user.password_hash):
-            encoded_jwt = jwt.encode({"username": user.username,"id":user.id}, app.config['SECRET_KEY'], algorithm="HS256")
+            encoded_jwt = jwt.encode({"username": user.username,"id":user.id}, 'secret', algorithm="HS256")
             # Create a response object
             response = make_response(
                 {"token": encoded_jwt, "message": f"Welcome Back {user.username}"},
@@ -145,7 +145,7 @@ class LoginRestaurant(Resource):
         restaurant = Restaurant.query.filter_by(email=email).first()
         
         if restaurant and bcrypt.checkpw(password.encode('utf-8'), restaurant.password_hash):
-            encoded_jwt = jwt.encode({"name": restaurant.name,"id":restaurant.id}, app.config['SECRET_KEY'], algorithm="HS256")
+            encoded_jwt = jwt.encode({"name": restaurant.name,"id":restaurant.id}, 'secret', algorithm="HS256")
             response = make_response(
                 {"token": encoded_jwt, "message": f"Welcome Back {restaurant.name}"},
                 201
@@ -162,6 +162,7 @@ class LoginRestaurant(Resource):
         else:
             return make_response('Invalid credentials', 400)
 
+#User and Restaurant Resources handle CRUD operations
 class users(Resource):
     def get(self):
         users=[user.to_dict() for user in User.query.all()]
@@ -173,7 +174,7 @@ class users(Resource):
         
 class User_by_id(Resource):
     def get(self,id):
-        if id == None:
+        if id is None:
             return make_response(jsonify({'message':'missing id parameter'}),400)
         
         user=User.query.get(id)
@@ -187,7 +188,7 @@ class User_by_id(Resource):
         return make_response(jsonify({'message':'user not found'}),404)
     
     def patch(self,id):
-        if id == None:
+        if id is None:
             return make_response(jsonify({'message':'missing id parameter'}),400)
         
         data=request.get_json()
@@ -204,7 +205,7 @@ class User_by_id(Resource):
         return make_response(jsonify({'message':'user not found'}),404)
     
     def delete(self,id):  
-        if id == None:
+        if id is None:
             return make_response(jsonify({'message':'missing id parameter'}),400)
               
         user=User.query.get(id)
@@ -229,7 +230,7 @@ class restaurants(Resource):
         
 class Restaurant_by_id(Resource):
     def get(self,id):
-        if id == None:
+        if id is None:
             return make_response(jsonify({'message':'missing id parameter'}),400)
         
         restaurant=Restaurant.query.get(id)
@@ -243,7 +244,7 @@ class Restaurant_by_id(Resource):
         return make_response(jsonify({'message':'restaurant not found'}),404)
     
     def patch(self,id):
-        if id == None:
+        if id is None:
             return make_response(jsonify({'message':'missing id parameter'}),400)
         
         data=request.get_json()
@@ -260,7 +261,7 @@ class Restaurant_by_id(Resource):
         return make_response(jsonify({'message':'restaurant not found'}),404)
     
     def delete(self,id):  
-        if id == None:
+        if id is None:
             return make_response(jsonify({'message':'missing id parameter'}),400)
               
         restaurant=Restaurant.query.get(id)
@@ -274,6 +275,7 @@ class Restaurant_by_id(Resource):
             )
         return make_response(jsonify({'message':'restaurant not found'}),404)           
 
+#Posts Resource handles CRUD operations for posts
 class Posts(Resource):
     def get(self):
         location = request.args.get('location')
@@ -326,7 +328,7 @@ class Posts(Resource):
         price = data['price']
         category = data['category']
 
-        # save to online storages like s3 buckets and cloudinary and returns url
+        # save to online storages like s3 buckets and cloudinary and returns url but have done it on the frontend
 
         restaurant=Restaurant.query.filter_by(id=restaurant_id)
         if restaurant:
@@ -352,7 +354,7 @@ class Posts(Resource):
     
 class PostById(Resource):
     def get(self, id):
-        if id == None:
+        if id is None:
             return make_response(jsonify({'message':'missing id parameter'}),400)
         
         post = Post.query.get(id)
@@ -375,7 +377,7 @@ class PostById(Resource):
         return make_response({'message': 'Post not found'}, 404)
 
     def post(self,id):
-        if id == None:
+        if id is None:
             return make_response(jsonify({'message':'missing id parameter'}),400)
         
         post = Post.query.get(id)
@@ -398,7 +400,7 @@ class PostById(Resource):
                     user_id = user_id,
                     post_id = id,
                     comment_id=new_comment.id,
-                    liked=recent_interaction.liked 
+                    liked=recent_interaction.liked if recent_interaction else False 
                 )
                 db.session.add(new_interaction)
                 db.session.commit()
@@ -429,7 +431,7 @@ class PostById(Resource):
     '<user_id=4, post_id=1, liked=true, comment_id=6>'
 
     def put(self, id):
-        if id == None:
+        if id is None:
             return make_response(jsonify({'message':'missing id parameter'}),400)
         
         post = Post.query.get(id)
@@ -448,7 +450,7 @@ class PostById(Resource):
         return make_response({'error': 'Post not found'}, 404)
 
     def patch(self, id):
-        if id == None:
+        if id is None:
             return make_response(jsonify({'message':'missing id parameter'}),400)
         
         post = Post.query.get(id)
@@ -463,7 +465,7 @@ class PostById(Resource):
         return make_response({'error': 'Post not found'}, 404)
 
     def delete(self, id):
-        if id == None:
+        if id is None:
             return make_response(jsonify({'message':'missing id parameter'}),400)
         
         post = Post.query.get(id)
@@ -482,11 +484,11 @@ def index():
 # This endpoint clears the cookie to log out the user
 @app.route('/api/users/logout', methods=['POST'])
 def logout_user():
-    response = make_response({"message": "Logged out successfully"}, 200)
+    response = make_response({"message": "User Logged out successfully"}, 200)
     response.set_cookie(
         'token',
-        '',  # clear cookie value
-        expires=0,  # expire immediately
+        '',  # clear cookie here
+        expires=0,  # expires immediately
         httponly=True,
         samesite='Lax',
         secure=False
@@ -514,6 +516,7 @@ api.add_resource(RegisterUser,'/api/users/register')
 api.add_resource(RegisterRestaurant,'/api/restaurants/register')
 api.add_resource(LoginUser,'/api/users/login')
 api.add_resource(LoginRestaurant,'/api/restaurants/login')
+
 # Users
 api.add_resource(users,'/users')
 api.add_resource(User_by_id,'/users/<int:id>')
@@ -523,3 +526,19 @@ api.add_resource(Restaurant_by_id,'/restaurants/<int:id>')
 # Posts
 api.add_resource(Posts,'/api/posts')
 api.add_resource(PostById,'/api/posts/<int:id>')
+
+# Logout endpoints
+api.add_resource(logout_user, '/api/users/logout')
+api.add_resource(logout_restaurant, '/api/restaurants/logout')
+
+# No need for end point for the following resources as they are already displayed in the PostById resource
+# # Comments
+# api.add_resource(Comments,'/api/posts/<int:id>/comments')
+# api.add_resource(CommentById,'/api/posts/<int:id>/comments/<int:id>')
+
+# # Interactions
+# api.add_resource(Interactions,'/api/posts/<int:id>/interactions')
+# api.add_resource(InteractionById,'/api/posts/<int:id>/interactions/<int:id>')
+
+if __name__ == '__main__':
+    app.run(debug=True)
