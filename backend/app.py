@@ -475,6 +475,32 @@ class PostById(Resource):
             return make_response({'message': 'Post deleted successfully'}, 200)
         return make_response({'error': 'Post not found'}, 404)
 
+class LogoutUser(Resource):
+    def post(self):
+        response = make_response({"message": "Logged out successfully"}, 200)
+        response.set_cookie(
+            'token',
+            '',  # clear cookie value
+            expires=0,  # expire immediately
+            httponly=True,
+            samesite='Lax',
+            secure=False
+        )
+        return response
+
+class LogoutRestaurant(Resource):
+    def post(self):
+        response = make_response({"message": "Restaurant logged out successfully"}, 200)
+        response.set_cookie(
+            'token',
+            '', 
+            expires=0,  
+            httponly=True,
+            samesite='Lax',
+            secure=False
+        )
+        return response
+
 # Main route
 @app.route('/')
 def index():
@@ -482,33 +508,33 @@ def index():
 
 # Logout endpoint
 # This endpoint clears the cookie to log out the user
-@app.route('/api/users/logout', methods=['POST'])
-def logout_user():
-    response = make_response({"message": "User Logged out successfully"}, 200)
-    response.set_cookie(
-        'token',
-        '',  # clear cookie here
-        expires=0,  # expires immediately
-        httponly=True,
-        samesite='Lax',
-        secure=False
-    )
-    return response
+# @app.route('/api/users/logout', methods=['POST'])
+# def logout_user():
+#     response = make_response({"message": "User Logged out successfully"}, 200)
+#     response.set_cookie(
+#         'token',
+#         '',  # clear cookie here
+#         expires=0,  # expires immediately
+#         httponly=True,
+#         samesite='Lax',
+#         secure=False
+#     )
+#     return response
 
-# Logout endpoint for restaurants
-# This endpoint clears the cookie to log out the restaurant
-@app.route('/api/restaurants/logout', methods=['POST'])
-def logout_restaurant():
-    response = make_response({"message": "Restaurant logged out successfully"}, 200)
-    response.set_cookie(
-        'token',
-        '',
-        expires=0,
-        httponly=True,
-        samesite='Lax',
-        secure=False
-    )
-    return response
+# # Logout endpoint for restaurants
+# # This endpoint clears the cookie to log out the restaurant
+# @app.route('/api/restaurants/logout', methods=['POST'])
+# def logout_restaurant():
+#     response = make_response({"message": "Restaurant logged out successfully"}, 200)
+#     response.set_cookie(
+#         'token',
+#         '',
+#         expires=0,
+#         httponly=True,
+#         samesite='Lax',
+#         secure=False
+#     )
+#     return response
 
 # Register the API routes
 # Users endpoints
@@ -528,8 +554,8 @@ api.add_resource(Posts,'/api/posts')
 api.add_resource(PostById,'/api/posts/<int:id>')
 
 # Logout endpoints
-api.add_resource(logout_user, '/api/users/logout')
-api.add_resource(logout_restaurant, '/api/restaurants/logout')
+api.add_resource(LogoutUser, '/api/users/logout')
+api.add_resource(LogoutRestaurant, '/api/restaurants/logout')
 
 # No need for end point for the following resources as they are already displayed in the PostById resource
 # # Comments
