@@ -14,21 +14,8 @@ import { ToastContainer } from 'react-toastify';
 
 const AppLayout = () => {
   const { user, logout } = useAuth();
-
   return (
     <div className="min-h-screen bg-gray-50">
-      <ToastContainer
-        position="top-right"
-        autoClose={5000}
-        hideProgressBar={false}
-        newestOnTop={false}
-        closeOnClick={false}
-        rtl={false}
-        pauseOnFocusLoss
-        draggable
-        pauseOnHover
-        theme="light"
-      />
       {/* Desktop Layout */}
       <div className="hidden lg:flex">
         <Sidebar userName={user?.name || "Guest"} />
@@ -46,8 +33,14 @@ const AppLayout = () => {
       <div className="lg:hidden flex flex-col h-screen">
         {/* Fixed Top Header */}
         <header className="fixed top-0 left-0 right-0 bg-white border-b border-gray-200 z-50 px-4 py-3">
-          <div className="flex items-center justify-center">
+          <div className="flex items-center justify-between">
             <h1 className="text-2xl font-bold text-orange-600">savorySafari</h1>
+            <Link
+              to={'/login'}
+              className="flex items-center space-x-3 p-2 rounded hover:bg-yellow-100 text-orange-700"
+            >
+              <LogOut/>
+            </Link>
           </div>
         </header>
 
@@ -72,7 +65,7 @@ const Sidebar = ({ userName }) => (
         <SidebarItem icon={<Home />} label="Home" to="/home" />
         <SidebarItem icon={<Compass />} label="Explore" to="/explore" />
         <SidebarItem icon={<Upload />} label="Upload" to="/upload" />
-        <SidebarItem icon={<User />} label="Profile" to="/profile/:username" />
+        <SidebarItem icon={<User />} label="Profile" to="/profile/1" />
       </nav>
     </div>
     <div className="px-4 pb-4 space-y-2">
@@ -105,7 +98,7 @@ const MobileNavigation = () => (
       <MobileNavItem icon={<Search size={24} />} to="/search" />
       <MobileNavItem icon={<Upload size={24} />} to="/upload" />
       <MobileNavItem icon={<Compass size={24} />} to="/explore" />
-      <MobileNavItem icon={<User size={24} />} to="/profile/:username" />
+      <MobileNavItem icon={<User size={24} />} to="/profile/1" />
     </div>
   </nav>
 );

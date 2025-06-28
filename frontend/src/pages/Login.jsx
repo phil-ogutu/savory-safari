@@ -2,17 +2,16 @@ import React from "react";
 import { Formik, Form, Field } from "formik";
 import * as Yup from "yup";
 import { useNavigate } from "react-router-dom";
-import { useSnackbar } from "notistack";
 import Button from "../components/UI/Button";
 import { Link } from "react-router-dom";
 import ImageCarousel from "../components/UI/ImageCarousel";
+import { toast } from "react-toastify";
 
-// // Extend Yup with password validation
 // YupPassword(Yup);
 
 const validationSchema = Yup.object().shape({
   email: Yup.string().email("Invalid email").required("Email is required"),
-  password: Yup.string().required("Password is required").min(6, "Min 6 chars"),
+  password: Yup.string().required("Password is required").min(4, "Min 6 chars"),
   role: Yup.string()
     .oneOf(["user", "restaurant"], "Select a role")
     .required("Role is required"),
@@ -20,8 +19,6 @@ const validationSchema = Yup.object().shape({
 
 const Login = ({ setUser }) => {
   const navigate = useNavigate();
-  const { enqueueSnackbar } = useSnackbar();
-
   return (
     <div className="flex h-screen">
       <div className="w-full md:w-1/2 flex flex-col justify-center items-center bg-yellow-100 p-8 rounded-l-3xl">
@@ -34,29 +31,27 @@ const Login = ({ setUser }) => {
           initialValues={{ email: "", password: "", role: "" }}
           validationSchema={validationSchema}
           onSubmit={(values, actions) => {
-            fetch("https://example.com/login_user", {
-              // Replace with your actual API URL
+            console.log(values)
+            fetch(`http://localhost:5000/api/${values.role}s/login`, {
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify(values),
             })
               .then((res) => {
                 if (res.status === 201) {
-                  enqueueSnackbar("Login successful!", { variant: "success" });
+                  toast.success("Login successful!");
+                  navigate("/home");
                   return res.json();
                 }
                 return res.json().then((data) => {
-                  enqueueSnackbar(data.message || "Login failed", {
-                    variant: "error",
-                  });
+                  console.log(data)
+                  toast.error("Login failed!");
                 });
               })
-              .then((user) => {
-                setUser(user);
-                navigate("/");
-              })
-              .catch(() =>
-                enqueueSnackbar("Network error", { variant: "error" })
+              .catch((err) =>{
+                  console.error(err)
+                  toast.error(`Login failed!${err}`)
+                }
               )
               .finally(() => actions.resetForm());
           }}
@@ -114,7 +109,7 @@ const Login = ({ setUser }) => {
                 <Link to="#">Forgot password?</Link>
               </div>
 
-              <Button content="Login" className="w-full" />
+              <Button content="Login" className="w-full" type="submit"/>
 
               <Link
                 to="/register"

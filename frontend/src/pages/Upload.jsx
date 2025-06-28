@@ -15,10 +15,6 @@ export default function Upload() {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (!selectedFile) {
-      alert("Please upload file")
-      return
-    };
     const formData = new FormData();
     // formData.append("media_file", selectedFile);
     formData.append("media_file", 'https://i.pinimg.com/736x/fe/b8/87/feb887802c311ebaf4c3d6ee9509f033.jpg');
