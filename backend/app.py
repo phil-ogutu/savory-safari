@@ -9,9 +9,13 @@ import jwt
 app=Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI']='sqlite:///savory-safari.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.config['SECRET_KEY'] = 'secret'  # used for JWT encoding/decoding
 app.json.compact=False
 
-CORS(app)
+# Corrected CORS to allow specific origin and credentials (cookies)
+CORS(app, supports_credentials=True)
+# Replace http://localhost:3000 with your frontend URL in production
+
 migrate=Migrate(app,db)
 db.init_app(app)
 
@@ -42,12 +46,22 @@ class RegisterUser(Resource):
         )
         db.session.add(new_user)
         db.session.commit()
-        encoded_jwt = jwt.encode({"username": new_user.username,"id":new_user.id}, "secret", algorithm="HS256")
-        # create a cookie
+
+        # encode the jwt token
+        encoded_jwt = jwt.encode({"username": new_user.username,"id":new_user.id}, 'secret', algorithm="HS256")
         response=make_response(
            {"token":encoded_jwt,"message":"User created successfully"},
            201
         )
+        # create a cookie
+        response.set_cookie(
+            'token',  # cookie name
+            encoded_jwt,  # cookie value
+            httponly=True,  # prevent JS access
+            samesite='Lax',  # adjust depending on cross-site needs
+            secure=False  # set to True if using HTTPS in production
+        )
+
         return response
     
 class RegisterRestaurant(Resource):
@@ -75,11 +89,15 @@ class RegisterRestaurant(Resource):
         )
         db.session.add(new_restaurant)
         db.session.commit()
-        encoded_jwt = jwt.encode({"name": new_restaurant.name,"id":new_restaurant.id}, "secret", algorithm="HS256")
+        encoded_jwt = jwt.encode({"name": new_restaurant.name,"id":new_restaurant.id}, 'secret', algorithm="HS256")
 
         response=make_response(
            {"token":encoded_jwt,"message":"Restaurant created successfully"},
            201
+        )
+        # create a cookie
+        response.set_cookie(
+            'token',encoded_jwt,httponly=True,samesite='Lax',secure=False
         )
         return response
     
@@ -92,13 +110,27 @@ class LoginUser(Resource):
         user = User.query.filter_by(email=email).first()
         
         if user and bcrypt.checkpw(password.encode('utf-8'), user.password_hash):
-            encoded_jwt = jwt.encode({"username": user.username,"id":user.id}, "secret", algorithm="HS256")
-            return make_response(
-                {"token":encoded_jwt,"message":f"Welcome Back {user.username}"},
+            encoded_jwt = jwt.encode({"username": user.username,"id":user.id}, 'secret', algorithm="HS256")
+            # Create a response object
+            response = make_response(
+                {"token": encoded_jwt, "message": f"Welcome Back {user.username}"},
                 201
             )
+            
+            # Set token in cookie upon login
+            response.set_cookie(
+                'token',
+                encoded_jwt,
+                httponly=True,
+                samesite='Lax',
+                secure=False
+            )
+            
+            return response
+    
         else:
             return make_response('Invalid credentials', 400)
+        
         
 class LoginRestaurant(Resource):
     def post(self):
@@ -109,14 +141,24 @@ class LoginRestaurant(Resource):
         restaurant = Restaurant.query.filter_by(email=email).first()
         
         if restaurant and bcrypt.checkpw(password.encode('utf-8'), restaurant.password_hash):
-            encoded_jwt = jwt.encode({"name": restaurant.name,"id":restaurant.id}, "secret", algorithm="HS256")
-            return make_response(
-                {"token":encoded_jwt,"message":f"Welcome Back {restaurant.name}"},
+            encoded_jwt = jwt.encode({"name": restaurant.name,"id":restaurant.id}, 'secret', algorithm="HS256")
+            response = make_response(
+                {"token": encoded_jwt, "message": f"Welcome Back {restaurant.name}"},
                 201
             )
+            # Set token in cookie upon login
+            response.set_cookie(
+                'token',
+                encoded_jwt,
+                httponly=True,
+                samesite='Lax',
+                secure=False
+            )
+            return response
         else:
             return make_response('Invalid credentials', 400)
 
+#User and Restaurant Resources handle CRUD operations
 class users(Resource):
     def get(self):
         users=[user.to_dict() for user in User.query.all()]
@@ -128,7 +170,7 @@ class users(Resource):
         
 class User_by_id(Resource):
     def get(self,id):
-        if id == None:
+        if id is None:
             return make_response(jsonify({'message':'missing id parameter'}),400)
         
         user=User.query.get(id)
@@ -142,7 +184,7 @@ class User_by_id(Resource):
         return make_response(jsonify({'message':'user not found'}),404)
     
     def patch(self,id):
-        if id == None:
+        if id is None:
             return make_response(jsonify({'message':'missing id parameter'}),400)
         
         data=request.get_json()
@@ -159,7 +201,7 @@ class User_by_id(Resource):
         return make_response(jsonify({'message':'user not found'}),404)
     
     def delete(self,id):  
-        if id == None:
+        if id is None:
             return make_response(jsonify({'message':'missing id parameter'}),400)
               
         user=User.query.get(id)
@@ -184,7 +226,7 @@ class restaurants(Resource):
         
 class Restaurant_by_id(Resource):
     def get(self,id):
-        if id == None:
+        if id is None:
             return make_response(jsonify({'message':'missing id parameter'}),400)
         
         restaurant=Restaurant.query.get(id)
@@ -198,7 +240,7 @@ class Restaurant_by_id(Resource):
         return make_response(jsonify({'message':'restaurant not found'}),404)
     
     def patch(self,id):
-        if id == None:
+        if id is None:
             return make_response(jsonify({'message':'missing id parameter'}),400)
         
         data=request.get_json()
@@ -215,7 +257,7 @@ class Restaurant_by_id(Resource):
         return make_response(jsonify({'message':'restaurant not found'}),404)
     
     def delete(self,id):  
-        if id == None:
+        if id is None:
             return make_response(jsonify({'message':'missing id parameter'}),400)
               
         restaurant=Restaurant.query.get(id)
@@ -229,6 +271,7 @@ class Restaurant_by_id(Resource):
             )
         return make_response(jsonify({'message':'restaurant not found'}),404)           
 
+#Posts Resource handles CRUD operations for posts
 class Posts(Resource):
     def get(self):
         location = request.args.get('location')
@@ -281,7 +324,7 @@ class Posts(Resource):
         price = data['price']
         category = data['category']
 
-        # save to online storages like s3 buckets and cloudinary and returns url
+        # save to online storages like s3 buckets and cloudinary and returns url but have done it on the frontend
 
         restaurant=Restaurant.query.filter_by(id=restaurant_id)
         if restaurant:
@@ -307,7 +350,7 @@ class Posts(Resource):
     
 class PostById(Resource):
     def get(self, id):
-        if id == None:
+        if id is None:
             return make_response(jsonify({'message':'missing id parameter'}),400)
         
         post = Post.query.get(id)
@@ -330,7 +373,7 @@ class PostById(Resource):
         return make_response({'message': 'Post not found'}, 404)
 
     def post(self,id):
-        if id == None:
+        if id is None:
             return make_response(jsonify({'message':'missing id parameter'}),400)
         
         post = Post.query.get(id)
@@ -384,7 +427,7 @@ class PostById(Resource):
     '<user_id=4, post_id=1, liked=true, comment_id=6>'
 
     def put(self, id):
-        if id == None:
+        if id is None:
             return make_response(jsonify({'message':'missing id parameter'}),400)
         
         post = Post.query.get(id)
@@ -403,7 +446,7 @@ class PostById(Resource):
         return make_response({'error': 'Post not found'}, 404)
 
     def patch(self, id):
-        if id == None:
+        if id is None:
             return make_response(jsonify({'message':'missing id parameter'}),400)
         
         post = Post.query.get(id)
@@ -418,7 +461,7 @@ class PostById(Resource):
         return make_response({'error': 'Post not found'}, 404)
 
     def delete(self, id):
-        if id == None:
+        if id is None:
             return make_response(jsonify({'message':'missing id parameter'}),400)
         
         post = Post.query.get(id)
@@ -428,15 +471,74 @@ class PostById(Resource):
             return make_response({'message': 'Post deleted successfully'}, 200)
         return make_response({'error': 'Post not found'}, 404)
 
+class LogoutUser(Resource):
+    def post(self):
+        response = make_response({"message": "Logged out successfully"}, 200)
+        response.set_cookie(
+            'token',
+            '',  # clear cookie value
+            expires=0,  # expire immediately
+            httponly=True,
+            samesite='Lax',
+            secure=False
+        )
+        return response
+
+class LogoutRestaurant(Resource):
+    def post(self):
+        response = make_response({"message": "Restaurant logged out successfully"}, 200)
+        response.set_cookie(
+            'token',
+            '', 
+            expires=0,  
+            httponly=True,
+            samesite='Lax',
+            secure=False
+        )
+        return response
+
+# Main route
 @app.route('/')
 def index():
     return make_response('Oh yes, It is our social app',200)
 
+# Logout endpoint
+# This endpoint clears the cookie to log out the user
+# @app.route('/api/users/logout', methods=['POST'])
+# def logout_user():
+#     response = make_response({"message": "User Logged out successfully"}, 200)
+#     response.set_cookie(
+#         'token',
+#         '',  # clear cookie here
+#         expires=0,  # expires immediately
+#         httponly=True,
+#         samesite='Lax',
+#         secure=False
+#     )
+#     return response
+
+# # Logout endpoint for restaurants
+# # This endpoint clears the cookie to log out the restaurant
+# @app.route('/api/restaurants/logout', methods=['POST'])
+# def logout_restaurant():
+#     response = make_response({"message": "Restaurant logged out successfully"}, 200)
+#     response.set_cookie(
+#         'token',
+#         '',
+#         expires=0,
+#         httponly=True,
+#         samesite='Lax',
+#         secure=False
+#     )
+#     return response
+
+# Register the API routes
 # Users endpoints
 api.add_resource(RegisterUser,'/api/users/register')
 api.add_resource(RegisterRestaurant,'/api/restaurants/register')
 api.add_resource(LoginUser,'/api/users/login')
 api.add_resource(LoginRestaurant,'/api/restaurants/login')
+
 # Users
 api.add_resource(users,'/users')
 api.add_resource(User_by_id,'/users/<int:id>')
@@ -446,3 +548,19 @@ api.add_resource(Restaurant_by_id,'/restaurants/<int:id>')
 # Posts
 api.add_resource(Posts,'/api/posts')
 api.add_resource(PostById,'/api/posts/<int:id>')
+
+# Logout endpoints
+api.add_resource(LogoutUser, '/api/users/logout')
+api.add_resource(LogoutRestaurant, '/api/restaurants/logout')
+
+# No need for end point for the following resources as they are already displayed in the PostById resource
+# # Comments
+# api.add_resource(Comments,'/api/posts/<int:id>/comments')
+# api.add_resource(CommentById,'/api/posts/<int:id>/comments/<int:id>')
+
+# # Interactions
+# api.add_resource(Interactions,'/api/posts/<int:id>/interactions')
+# api.add_resource(InteractionById,'/api/posts/<int:id>/interactions/<int:id>')
+
+if __name__ == '__main__':
+    app.run(debug=True)
