@@ -29,9 +29,12 @@ const AppRoutes = () => {
         <Route path="/explore" element={<Explore />} />
         <Route path="/search" element={<Search />} />
         <Route path="/post/:id" element={<PostDetails />} />
-        <Route path="/profile/:username" element={<Profile />} />
+        <Route path="/profile/" element={<Profile />} />
         <Route path="/profile/user/settings/:id" element={<UserSettings />} />
-        <Route path="/profile/restaurant/settings/:id" element={<RestaurantSettings />} />
+        <Route
+          path="/profile/restaurant/settings/:id"
+          element={<RestaurantSettings />}
+        />
         <Route
           path="/upload"
           element={
