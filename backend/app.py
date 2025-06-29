@@ -13,7 +13,7 @@ app.config['SECRET_KEY'] = 'secret'  # used for JWT encoding/decoding
 app.json.compact=False
 
 # Corrected CORS to allow specific origin and credentials (cookies)
-CORS(app, origins=["http://localhost:3000"], supports_credentials=True)
+CORS(app, supports_credentials=True)
 # Replace http://localhost:3000 with your frontend URL in production
 
 migrate=Migrate(app,db)
