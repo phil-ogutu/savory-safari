@@ -1,5 +1,6 @@
 import React from "react";
-import { Link, Outlet } from "react-router-dom";
+import { Link, Outlet, NavLink, useLocation } from "react-router-dom";
+import { AnimatePresence, motion } from "framer-motion";
 import { useAuth } from "../contexts/AuthContext";
 import {
   Home,
@@ -10,22 +11,34 @@ import {
   Settings,
   LogOut,
 } from "lucide-react";
-import { ToastContainer } from 'react-toastify';
+``;
+import { ToastContainer } from "react-toastify";
 
 const AppLayout = () => {
   const { user, logout } = useAuth();
+  const location = useLocation();
+  console.log("user", user);
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Desktop Layout */}
       <div className="hidden lg:flex">
         <Sidebar userName={user?.name || "Guest"} />
         <div className="flex-1 ml-64 flex flex-col">
-          <main className="flex-1 p-4">
-            <Outlet />
+          <main className="flex-1 p-4 bg-gray-800 ">
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={location.pathname}
+                initial={{ x: 300, opacity: 0 }}
+                animate={{ x: 0, opacity: 1 }}
+                exit={{ x: -300, opacity: 0 }}
+                transition={{ duration: 0.4 }}
+                className="h-full"
+              >
+                <Outlet />
+              </motion.div>
+            </AnimatePresence>
           </main>
-          <footer className="bg-white text-center p-4 text-sm text-gray-500">
-            © {new Date().getFullYear()} savorySafari. All rights reserved.
-          </footer>
         </div>
       </div>
 
@@ -34,19 +47,30 @@ const AppLayout = () => {
         {/* Fixed Top Header */}
         <header className="fixed top-0 left-0 right-0 bg-white border-b border-gray-200 z-50 px-4 py-3">
           <div className="flex items-center justify-between">
-            <h1 className="text-2xl font-bold text-orange-600">savorySafari</h1>
+            <h1 className="text-4xl font-bold text-orange">savorySafari</h1>
             <Link
-              to={'/login'}
-              className="flex items-center space-x-3 p-2 rounded hover:bg-yellow-100 text-orange-700"
+              to={"/login"}
+              className="flex items-center space-x-3 p-2 rounded hover:bg-light-orange text-orange-700"
             >
-              <LogOut/>
+              <LogOut />
             </Link>
           </div>
         </header>
 
         {/* Main Content */}
-        <main className="flex-1 pt-16 pb-16">
-          <Outlet />
+        <main className="flex-1 pt-16 pb-16 bg-gray-800">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={location.pathname}
+              initial={{ x: 300, opacity: 0 }}
+              animate={{ x: 0, opacity: 1 }}
+              exit={{ x: -300, opacity: 0 }}
+              transition={{ duration: 0.4 }}
+              className="h-full"
+            >
+              <Outlet />
+            </motion.div>
+          </AnimatePresence>
         </main>
 
         {/* Fixed Bottom Navigation */}
@@ -57,15 +81,15 @@ const AppLayout = () => {
 };
 
 const Sidebar = ({ userName }) => (
-  <div className="fixed left-0 top-0 w-64 bg-white shadow-xl h-screen flex flex-col justify-between z-40">
+  <div className="fixed left-0 top-0 w-64 bg-gray-200 shadow-xl h-screen flex flex-col justify-between z-40">
     <div>
-      <div className="text-3xl font-bold text-orange-600 p-4">savorySafari</div>
+      <div className="text-3xl font-bold text-orange p-4">savorySafari</div>
       <div className="px-4 text-sm text-gray-500">Welcome, {userName}</div>
       <nav className="mt-6 space-y-2">
         <SidebarItem icon={<Home />} label="Home" to="/home" />
         <SidebarItem icon={<Compass />} label="Explore" to="/explore" />
         <SidebarItem icon={<Upload />} label="Upload" to="/upload" />
-        <SidebarItem icon={<User />} label="Profile" to="/profile/1" />
+        <SidebarItem icon={<User />} label="Profile" to="/profile" />
       </nav>
     </div>
     <div className="px-4 pb-4 space-y-2">
@@ -73,7 +97,7 @@ const Sidebar = ({ userName }) => (
       <SidebarItem
         icon={<LogOut />}
         label="Logout"
-        to="#"
+        to="/login"
         onClick={() => (window.location.href = "/login")}
       />
     </div>
@@ -81,14 +105,18 @@ const Sidebar = ({ userName }) => (
 );
 
 const SidebarItem = ({ icon, label, to, onClick }) => (
-  <Link
+  <NavLink
     to={to}
     onClick={onClick}
-    className="flex items-center space-x-3 p-2 rounded hover:bg-yellow-100 text-orange-700"
+    className={({ isActive }) =>
+      `flex items-center space-x-3 p-2  text-orange-700 ${
+        isActive ? "bg-light-orange" : "hover:bg-light-orange"
+      }`
+    }
   >
     {icon}
     <span>{label}</span>
-  </Link>
+  </NavLink>
 );
 
 const MobileNavigation = () => (
@@ -98,7 +126,7 @@ const MobileNavigation = () => (
       <MobileNavItem icon={<Search size={24} />} to="/search" />
       <MobileNavItem icon={<Upload size={24} />} to="/upload" />
       <MobileNavItem icon={<Compass size={24} />} to="/explore" />
-      <MobileNavItem icon={<User size={24} />} to="/profile/1" />
+      <MobileNavItem icon={<User size={24} />} to="/profile/" />
     </div>
   </nav>
 );
