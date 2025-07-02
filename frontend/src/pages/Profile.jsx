@@ -1,9 +1,21 @@
 import { User, Plus, Grid, MessageSquare, Heart, Share } from "lucide-react";
 import useRestaurantProfile from "../hooks/useRestaurantProfile";
 import Spinner from "../components/UI/Spinner";
+import { jwtDecode } from "jwt-decode";
 
 export default function ProfilePage() {
-  const { restaurant, loading } = useRestaurantProfile(1);
+  const queryString = window.location.search;
+
+  // Create a URLSearchParams object to parse the query string
+  const params = new URLSearchParams(queryString);
+  const profile_id = params.get('profile_id');
+  const token = localStorage.getItem('token');
+  let decoded;
+  if (token){
+    decoded = jwtDecode(token);
+    console.log('decoded',decoded)
+  }
+  const { restaurant, loading } = useRestaurantProfile(profile_id || decoded?.id);
 
   if (loading || !restaurant) {
     return (
@@ -87,6 +99,7 @@ export default function ProfilePage() {
                           📍 {post.location_tag}
                         </button>
                       </div>
+                      
                     </div>
                   </div>
                 ))}

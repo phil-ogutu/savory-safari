@@ -1,23 +1,23 @@
 import { useState } from "react";
 
-function usePost(url) {
+function usePatch(url) {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState(null);
   const [error, setError] = useState(null);
 
-  const PostData = async (body) => {
+  const PatchData = async (body) => {
     setLoading(true);
     setError(null);
     try {
       const res = await fetch(url, {
-        method: "POST",
+        method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(body),
         credentials: 'include',
       });
 
       const data = await res.json();
-      if (!res.ok) throw new Error(data.message || "Failed to post data");
+      if (!res.ok) throw new Error(data.message || "Failed to Patch data");
 
       setMessage(data.message);
     } catch (err) {
@@ -27,7 +27,7 @@ function usePost(url) {
     }
   };
 
-  return { PostData, loading, message, error, setLoading };
+  return { PatchData, loading, message, error, setLoading };
 }
 
-export default usePost;
+export default usePatch;

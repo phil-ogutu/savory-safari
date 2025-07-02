@@ -1,10 +1,11 @@
-from flask import Flask,request,jsonify,make_response
+from flask import Flask,request,jsonify,make_response,g
 from flask_cors import CORS
 from flask_restful import Resource,Api
 from flask_migrate import Migrate
 from models import db, User,Post,Comment, Restaurant, UserPost
 import bcrypt
 import jwt
+from functools import wraps
 
 app=Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI']='sqlite:///savory-safari.db'
@@ -20,6 +21,26 @@ migrate=Migrate(app,db)
 db.init_app(app)
 
 api=Api(app)
+
+def token_required(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        token = request.cookies.get('token')
+
+        if not token:
+            return {"message": "Token is missing!"}, 401
+
+        try:
+            data = jwt.decode(token, 'secret', algorithms=["HS256"])
+            g.user_id = data['id']
+            g.user_name = data['name']
+        except jwt.ExpiredSignatureError:
+            return {"message": "Token expired!"}, 401
+        except jwt.InvalidTokenError:
+            return {"message": "Invalid token!"}, 401
+
+        return f(*args, **kwargs)
+    return decorated
 
 class RegisterUser(Resource):
     def post(self):
@@ -48,7 +69,7 @@ class RegisterUser(Resource):
         db.session.commit()
 
         # encode the jwt token
-        encoded_jwt = jwt.encode({"username": new_user.username,"id":new_user.id}, 'secret', algorithm="HS256")
+        encoded_jwt = jwt.encode({"name": new_user.username,"id":new_user.id,"role":"user"}, 'secret', algorithm="HS256")
         response=make_response(
            {"token":encoded_jwt,"message":"User created successfully"},
            201
@@ -89,7 +110,7 @@ class RegisterRestaurant(Resource):
         )
         db.session.add(new_restaurant)
         db.session.commit()
-        encoded_jwt = jwt.encode({"name": new_restaurant.name,"id":new_restaurant.id}, 'secret', algorithm="HS256")
+        encoded_jwt = jwt.encode({"name": new_restaurant.name,"id":new_restaurant.id,"role":"restaurant"}, 'secret', algorithm="HS256")
 
         response=make_response(
            {"token":encoded_jwt,"message":"Restaurant created successfully"},
@@ -110,7 +131,7 @@ class LoginUser(Resource):
         user = User.query.filter_by(email=email).first()
         
         if user and bcrypt.checkpw(password.encode('utf-8'), user.password_hash):
-            encoded_jwt = jwt.encode({"username": user.username,"id":user.id}, 'secret', algorithm="HS256")
+            encoded_jwt = jwt.encode({"name": user.username,"id":user.id,"role":"user"}, 'secret', algorithm="HS256")
             # Create a response object
             response = make_response(
                 {"token": encoded_jwt, "message": f"Welcome Back {user.username}"},
@@ -118,20 +139,12 @@ class LoginUser(Resource):
             )
             
             # Set token in cookie upon login
-            response.set_cookie(
-                'token',
-                encoded_jwt,
-                httponly=True,
-                samesite='Lax',
-                secure=False
-            )
+            response.set_cookie( 'token', encoded_jwt, httponly=True, samesite='Lax', secure=False)
             
             return response
-    
         else:
             return make_response('Invalid credentials', 400)
-        
-        
+               
 class LoginRestaurant(Resource):
     def post(self):
         data=request.get_json()
@@ -141,7 +154,7 @@ class LoginRestaurant(Resource):
         restaurant = Restaurant.query.filter_by(email=email).first()
         
         if restaurant and bcrypt.checkpw(password.encode('utf-8'), restaurant.password_hash):
-            encoded_jwt = jwt.encode({"name": restaurant.name,"id":restaurant.id}, 'secret', algorithm="HS256")
+            encoded_jwt = jwt.encode({"name": restaurant.name,"id":restaurant.id,"role":"restaurant"}, 'secret', algorithm="HS256")
             response = make_response(
                 {"token": encoded_jwt, "message": f"Welcome Back {restaurant.name}"},
                 201
@@ -273,6 +286,7 @@ class Restaurant_by_id(Resource):
 
 #Posts Resource handles CRUD operations for posts
 class Posts(Resource):
+    method_decorators = [token_required]
     def get(self):
         location = request.args.get('location')
         category = request.args.get('category')
@@ -290,28 +304,42 @@ class Posts(Resource):
 
         # Run the query
         posts = query.order_by(Post.created_at.desc()).all()
+        user_id=g.user_id
+        print(user_id)
+        
+        result = []
+        for post in posts:
+            # Safely get last liked value for this user
+            liked_matches = [i.liked for i in post.user_post_interactions if i.user_id == user_id]
+            last_liked = liked_matches[-1] if liked_matches else False
 
-        posts=[{
-            "restaurant": {
-                "id": post.restaurant.id,
-                "name": post.restaurant.name
-            },
-            "caption": post.caption,
-            "media_url": post.media_url,
-            "location_tag": post.location_tag,
-            "price": post.price,
-            "type_food": post.type_food,
-            "category": post.category,
-            "created_at": post.created_at,
-            "id": post.id,
-            "likes": len({interaction.user_id for interaction in post.user_post_interactions if interaction.liked}),
-            "comments": [{"user": interaction.user.username, "content": interaction.comment.content,"created_at":interaction.comment.created_at} for interaction in post.user_post_interactions if interaction.comment_id is not None],
-        } for post in posts]
-        response=make_response(
-            jsonify(posts),
-            200        
-        )
-        return response    
+            result.append({
+                "restaurant": {
+                    "id": post.restaurant.id,
+                    "name": post.restaurant.name,
+                    "photo_url": post.restaurant.photo_url
+                },
+                "caption": post.caption,
+                "media_url": post.media_url,
+                "location_tag": post.location_tag,
+                "price": post.price,
+                "type_food": post.type_food,
+                "category": post.category,
+                "created_at": post.created_at.isoformat(),  # make sure datetime is JSON serializable
+                "id": post.id,
+                "liked": last_liked,
+                "likes": len({i.user_id for i in post.user_post_interactions if i.liked}),
+                "comments": [
+                    {
+                        "user": i.user.username,
+                        "content": i.comment.content,
+                        "created_at": i.comment.created_at.isoformat()
+                    }
+                    for i in post.user_post_interactions if i.comment_id is not None
+                ],
+            })
+
+        return result, 200  
     
     def post(self):
         data = request.get_json()
@@ -349,11 +377,13 @@ class Posts(Resource):
         return make_response(jsonify({'message':'restaurant not found'}),404)  
     
 class PostById(Resource):
+    method_decorators = [token_required]
     def get(self, id):
         if id is None:
             return make_response(jsonify({'message':'missing id parameter'}),400)
         
         post = Post.query.get(id)
+        user_id = g.user_id
         if post:
             return make_response({
                 "restaurant": {
@@ -367,6 +397,7 @@ class PostById(Resource):
                 "type_food": post.type_food,
                 "category": post.category,
                 "created_at": post.created_at,
+                "liked": [interaction.liked for interaction in post.user_post_interactions if interaction.user_id == user_id][-1],
                 "likes": len({interaction.user_id for interaction in post.user_post_interactions if interaction.liked}),
                 "comments": [{"user": interaction.user.username, "content": interaction.comment.content,"created_at":interaction.comment.created_at} for interaction in post.user_post_interactions if interaction.comment_id is not None],
             }, 200)
@@ -405,6 +436,7 @@ class PostById(Resource):
                 # we are liking a post
                 # Like or unlike the post (toggle only user's own like)
                 new_like_status = not recent_interaction.liked if recent_interaction.liked else True
+                print(new_like_status)
                 new_interaction = UserPost(
                     user_id = user_id,
                     post_id = id,
@@ -415,16 +447,6 @@ class PostById(Resource):
                 db.session.commit()
                 return make_response(jsonify({'message':'post liked'}),201)  
         return make_response({'error': 'Post not found'}, 404)
-
-    '''Interactions'''
-    '<user_id=1, post_id=1, liked=true, comment_id=null>',
-    '<user_id=1, post_id=1, liked=false, comment_id=null>',
-    '<user_id=1, post_id=1, liked=true, comment_id=null>', # we have to know the previous state of the post
-    # do a get request to know the post state recent_post = post.user_post_interactions[-1]
-    '<user_id=1, post_id=1, liked=recent_post.liked, comment_id=1>',
-    '<user_id=2, post_id=1, liked=true, comment_id=4>',
-    '<user_id=3, post_id=1, liked=false, comment_id=5>',
-    '<user_id=4, post_id=1, liked=true, comment_id=6>'
 
     def put(self, id):
         if id is None:
@@ -501,36 +523,6 @@ class LogoutRestaurant(Resource):
 @app.route('/')
 def index():
     return make_response('Oh yes, It is our social app',200)
-
-# Logout endpoint
-# This endpoint clears the cookie to log out the user
-# @app.route('/api/users/logout', methods=['POST'])
-# def logout_user():
-#     response = make_response({"message": "User Logged out successfully"}, 200)
-#     response.set_cookie(
-#         'token',
-#         '',  # clear cookie here
-#         expires=0,  # expires immediately
-#         httponly=True,
-#         samesite='Lax',
-#         secure=False
-#     )
-#     return response
-
-# # Logout endpoint for restaurants
-# # This endpoint clears the cookie to log out the restaurant
-# @app.route('/api/restaurants/logout', methods=['POST'])
-# def logout_restaurant():
-#     response = make_response({"message": "Restaurant logged out successfully"}, 200)
-#     response.set_cookie(
-#         'token',
-#         '',
-#         expires=0,
-#         httponly=True,
-#         samesite='Lax',
-#         secure=False
-#     )
-#     return response
 
 # Register the API routes
 # Users endpoints

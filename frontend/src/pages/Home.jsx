@@ -16,7 +16,7 @@ export default function Home() {
     <div className="max-w-2xl mx-auto px-4 py-6 ">
       {posts?.length > 0 &&
         posts?.map((post, idx) => (
-          <PostCard key={post?.id || idx} post={post} />
+          <PostCard key={post?.id || idx} postData={post} />
         ))}
     </div>
   );

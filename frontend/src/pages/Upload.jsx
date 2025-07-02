@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "../components/UI/Button";
 import usePost from "../hooks/custom/usePost.hook";
 import { toast } from "react-toastify";
+import { jwtDecode } from "jwt-decode";
 
 export default function Upload() {
   const [caption, setCaption] = useState("");
@@ -18,6 +19,7 @@ export default function Upload() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    console.log('selectedFile',selectedFile)
     if (!selectedFile) {
       toast.error("Please select an image.");
       return;
@@ -42,30 +44,36 @@ export default function Upload() {
 
       if (cloudData.url) {
         // 2. Post to your backend with the Cloudinary image URL
-        const payload = {
-          media_file: cloudData.url,
-          caption,
-          location_tag: location,
-          category,
-          type_food: type,
-          price,
-          restaurant_id: 1,
-        };
-        try {
-          await PostData(payload);
-          setCaption("");
-          setLocation("");
-          setCategory("");
-          setType("");
-          setPrice("");
-          setSelectedFile(null);
-          toast.success("Post uploaded!", message);
-          setTimeout(() => {
-            navigate("/home");
-          }, 1200);
-        } catch (postErr) {
-          toast.error("Failed to post. Please try again.");
-          console.error(postErr);
+        const token = localStorage.getItem('token');
+        console.log('token',token)
+        if (token){
+          const decoded = jwtDecode(token);
+          console.log('decoded',decoded)
+          const payload = {
+            media_file: cloudData.url,
+            caption,
+            location_tag: location,
+            category,
+            type_food: type,
+            price,
+            restaurant_id: decoded.id,
+          };
+          try {
+            await PostData(payload);
+            setCaption("");
+            setLocation("");
+            setCategory("");
+            setType("");
+            setPrice("");
+            setSelectedFile(null);
+            toast.success("Post uploaded!", message);
+            setTimeout(() => {
+              navigate("/home");
+            }, 1200);
+          } catch (postErr) {
+            toast.error("Failed to post. Please try again.");
+            console.error(postErr);
+          }
         }
       } else {
         toast.error("Image upload failed.");
@@ -120,8 +128,8 @@ export default function Upload() {
             <input
               id="dropzone-file"
               type="file"
-              className="hidden"
-              onChange={(e) => setSelectedFile(e.target.files[0])}
+              // className="hidden"
+              onChange={(e) => {setSelectedFile(e.target.files[0])}}
             />
           </label>
         </div>

@@ -13,17 +13,24 @@ import {
 } from "lucide-react";
 ``;
 import { ToastContainer } from "react-toastify";
+import { jwtDecode } from "jwt-decode";
 
 const AppLayout = () => {
   const { user, logout } = useAuth();
   const location = useLocation();
   console.log("user", user);
+  const token = localStorage.getItem('token');
+  let decoded;
+  if (token){
+    decoded = jwtDecode(token);
+    console.log('decoded',decoded)
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Desktop Layout */}
       <div className="hidden lg:flex">
-        <Sidebar userName={user?.name || "Guest"} />
+        <Sidebar userName={decoded?.name || "Guest"} decoded={decoded}/>
         <div className="flex-1 ml-64 flex flex-col">
           <main className="flex-1 p-4 bg-gray-800 ">
             <AnimatePresence mode="wait">
@@ -48,12 +55,20 @@ const AppLayout = () => {
         <header className="fixed top-0 left-0 right-0 bg-white border-b border-gray-200 z-50 px-4 py-3">
           <div className="flex items-center justify-between">
             <h1 className="text-4xl font-bold text-orange">savorySafari</h1>
-            <Link
-              to={"/login"}
-              className="flex items-center space-x-3 p-2 rounded hover:bg-light-orange text-orange-700"
-            >
-              <LogOut />
-            </Link>
+            <div className="flex items-center">
+              {/* <Link
+                to={`/profile/${decoded.role}/settings/${decoded.id}`}
+                className="flex items-center space-x-3 p-2 rounded hover:bg-light-orange text-orange-700"
+              >
+                <Settings />
+              </Link> */}
+              <Link
+                to={"/login"}
+                className="flex items-center space-x-3 p-2 rounded hover:bg-light-orange text-orange-700"
+              >
+                <LogOut />
+              </Link>
+            </div>
           </div>
         </header>
 
@@ -74,13 +89,13 @@ const AppLayout = () => {
         </main>
 
         {/* Fixed Bottom Navigation */}
-        <MobileNavigation />
+        <MobileNavigation decoded={decoded}/>
       </div>
     </div>
   );
 };
 
-const Sidebar = ({ userName }) => (
+const Sidebar = ({ userName,decoded }) => (
   <div className="fixed left-0 top-0 w-64 bg-gray-200 shadow-xl h-screen flex flex-col justify-between z-40">
     <div>
       <div className="text-3xl font-bold text-orange p-4">savorySafari</div>
@@ -93,7 +108,7 @@ const Sidebar = ({ userName }) => (
       </nav>
     </div>
     <div className="px-4 pb-4 space-y-2">
-      <SidebarItem icon={<Settings />} label="Settings" to="/settings" />
+      <SidebarItem icon={<Settings />} label="Settings" to={`/profile/${decoded.role}/settings/${decoded.id}`} />
       <SidebarItem
         icon={<LogOut />}
         label="Logout"
@@ -119,14 +134,15 @@ const SidebarItem = ({ icon, label, to, onClick }) => (
   </NavLink>
 );
 
-const MobileNavigation = () => (
+const MobileNavigation = ({decoded}) => (
   <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-50">
     <div className="flex justify-around items-center py-2">
       <MobileNavItem icon={<Home size={24} />} to="/home" />
-      <MobileNavItem icon={<Search size={24} />} to="/search" />
-      <MobileNavItem icon={<Upload size={24} />} to="/upload" />
+      {/* <MobileNavItem icon={<Search size={24} />} to="/search" /> */}
       <MobileNavItem icon={<Compass size={24} />} to="/explore" />
-      <MobileNavItem icon={<User size={24} />} to="/profile/" />
+      <MobileNavItem icon={<Upload size={24} />} to="/upload" />
+      <MobileNavItem icon={<Settings size={24} />} to={`/profile/${decoded.role}/settings/${decoded.id}`} />
+      {decoded?.role == 'restaurant' && <MobileNavItem icon={<User size={24} />} to="/profile/" />}
     </div>
   </nav>
 );
