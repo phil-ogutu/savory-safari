@@ -12,6 +12,7 @@ function useFetch(url) {
             const res = await fetch(url, {
                 method: "GET",
                 headers: { "Content-Type": "application/json" },
+                credentials: 'include'
             });
 
             const response = await res.json();

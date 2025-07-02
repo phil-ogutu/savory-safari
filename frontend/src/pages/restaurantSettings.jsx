@@ -1,42 +1,81 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
 import YupPassword from "yup-password";
 import { Button } from "../components/UI/Button";
-import { useSnackbar } from "notistack";
+import { jwtDecode } from "jwt-decode";
+import useFetch from "../hooks/custom/useFetch.hook";
+import { toast } from "react-toastify";
 
 YupPassword(Yup);
 
 const RestaurantSettings = () => {
-  const { enqueueSnackbar } = useSnackbar();
 
   const schema = Yup.object().shape({
     name: Yup.string().min(2, "Too short").required("Name is required"),
     email: Yup.string().email("Invalid email").required("Email is required"),
     mobile: Yup.string().min(10, "At least 10 digits").required("Mobile is required"),
-    password: Yup.string().password().required("Password is required"),
     restaurant_bio: Yup.string().max(300, "Max 300 characters"),
     photo_url: Yup.string().url("Must be a valid URL"),
   });
+
+  const token = localStorage.getItem('token');
+  let decoded;
+  if (token){
+    decoded = jwtDecode(token);
+    console.log('decoded',decoded)
+  }
+  const {FetchData,data:userData} = useFetch(`http://localhost:5000/restaurants/${decoded?.id}`);
+  useEffect(()=>{
+    FetchData()
+  },[]);
+  console.log('userData',userData)
 
   return (
     <div className="max-w-md mx-auto mt-10 p-6 bg-white shadow-md rounded-lg">
       <h2 className="text-xl font-semibold mb-4">Restaurant Settings</h2>
 
       <Formik
+        enableReinitialize
         initialValues={{
-          name: "",
-          email: "",
-          mobile: "",
-          password: "",
-          restaurant_bio: "",
-          photo_url: "",
+          name: userData?.name,
+          email: userData?.email,
+          mobile: userData?.mobile,
+          restaurant_bio: userData?.restaurant_bio,
+          photo_url: userData?.photo_url,
         }}
         validationSchema={schema}
         onSubmit={(values, actions) => {
-          console.log("Submitted:", values);
-          enqueueSnackbar("Restaurant profile updated!", { variant: "success" });
-          actions.setSubmitting(false);
+          const payload = {
+            name: values.name,
+            mobile: values.mobile,
+            restaurant_bio: values.restaurant_bio,
+            photo_url: values.photo_url
+          };
+          fetch(`http://localhost:5000/restaurants/${decoded?.id}`, {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
+          })
+            .then((res) => {
+              if (res.status === 200) {
+                toast.success("Update successfull!");
+                return res.json();
+              };
+              return res.json().then((data) => {
+                console.log(data)
+                toast.error("Update failed!");
+              });
+            })
+            .catch((err) =>{
+                console.error(err)
+                toast.error(`Update failed!${err}`)
+              }
+            )
+            .finally(() => {
+              actions.resetForm()
+              actions.setSubmitting(false);
+            });
         }}
       >
         {({ isSubmitting }) => (
@@ -67,16 +106,6 @@ const RestaurantSettings = () => {
                 className="w-full px-4 py-2 border border-gray-300 rounded-md"
               />
               <ErrorMessage name="mobile" component="div" className="text-red-500 text-sm" />
-            </div>
-
-            <div>
-              <label className="block mb-1">Password</label>
-              <Field
-                type="password"
-                name="password"
-                className="w-full px-4 py-2 border border-gray-300 rounded-md"
-              />
-              <ErrorMessage name="password" component="div" className="text-red-500 text-sm" />
             </div>
 
             <div>

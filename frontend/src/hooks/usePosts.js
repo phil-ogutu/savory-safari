@@ -6,7 +6,7 @@ function usePosts() {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    fetch("http://localhost:5000/api/posts")
+    fetch("http://localhost:5000/api/posts",{credentials: 'include'})
       .then((res) => res.json())
       .then(setPosts)
       .catch((err) => setError(err.message))

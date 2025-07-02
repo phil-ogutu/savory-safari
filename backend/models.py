@@ -80,7 +80,7 @@ class Post(db.Model, SerializerMixin):
 
     restaurant = db.relationship('Restaurant', back_populates='posts')
     
-    user_post_interactions = db.relationship('UserPost', back_populates='post')
+    user_post_interactions = db.relationship('UserPost', back_populates='post', cascade='all')
 
     serialize_rules = ('-restaurant.posts', '-user_post_interactions.post',)
 
