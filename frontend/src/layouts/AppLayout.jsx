@@ -103,7 +103,7 @@ const Sidebar = ({ userName,decoded }) => (
       <nav className="mt-6 space-y-2">
         <SidebarItem icon={<Home />} label="Home" to="/home" />
         <SidebarItem icon={<Compass />} label="Explore" to="/explore" />
-        <SidebarItem icon={<Upload />} label="Upload" to="/upload" />
+        {decoded?.role == 'restaurant' && (<SidebarItem icon={<Upload />} label="Upload" to="/upload" />)}
         <SidebarItem icon={<User />} label="Profile" to="/profile" />
       </nav>
     </div>
@@ -140,7 +140,7 @@ const MobileNavigation = ({decoded}) => (
       <MobileNavItem icon={<Home size={24} />} to="/home" />
       {/* <MobileNavItem icon={<Search size={24} />} to="/search" /> */}
       <MobileNavItem icon={<Compass size={24} />} to="/explore" />
-      <MobileNavItem icon={<Upload size={24} />} to="/upload" />
+      {decoded?.role == 'restaurant' && (<MobileNavItem icon={<Upload size={24} />} to="/upload" />)}      
       <MobileNavItem icon={<Settings size={24} />} to={`/profile/${decoded.role}/settings/${decoded.id}`} />
       {decoded?.role == 'restaurant' && <MobileNavItem icon={<User size={24} />} to="/profile/" />}
     </div>

@@ -2,10 +2,12 @@ import { User, Plus, Grid, MessageSquare, Heart, Share } from "lucide-react";
 import useRestaurantProfile from "../hooks/useRestaurantProfile";
 import Spinner from "../components/UI/Spinner";
 import { jwtDecode } from "jwt-decode";
+import { toast } from "react-toastify";
+import { useNavigate } from "react-router-dom";
 
 export default function ProfilePage() {
   const queryString = window.location.search;
-
+  const navigate = useNavigate();
   // Create a URLSearchParams object to parse the query string
   const params = new URLSearchParams(queryString);
   const profile_id = params.get('profile_id');
@@ -16,6 +18,18 @@ export default function ProfilePage() {
     console.log('decoded',decoded)
   }
   const { restaurant, loading } = useRestaurantProfile(profile_id || decoded?.id);
+  const handleDelete = async(postId)=>{
+    await fetch(`http://localhost:5000/api/posts/${postId}`, {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+      credentials: 'include',
+    }).then((res) => res.json())
+    .then(()=>{
+      toast.success("Post deleted successfully!");
+      navigate("/home");
+    })
+    .catch((err) => toast.error("Post deletion failed!"));
+  };
 
   if (loading || !restaurant) {
     return (
@@ -99,6 +113,9 @@ export default function ProfilePage() {
                           📍 {post.location_tag}
                         </button>
                       </div>
+                      <button className="bg-orange-500 text-white px-3 py-1 rounded text-sm hover:bg-orange-600" onClick={(()=>{handleDelete(post?.id)})}>
+                        Delete
+                      </button>
                       
                     </div>
                   </div>

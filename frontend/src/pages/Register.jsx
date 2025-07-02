@@ -52,7 +52,10 @@ const Register = () => {
                   if (res.status === 201) {
                     toast.success("Login successful!");
                     navigate("/home");
-                    return res.json();
+                    return res.json().then((data) => {
+                      navigate("/home");
+                      localStorage.setItem('token', data?.token);
+                    });
                   }
                   return res.json().then((data) => {
                     console.log(data)

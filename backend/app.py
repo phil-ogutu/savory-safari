@@ -173,6 +173,7 @@ class LoginRestaurant(Resource):
 
 #User and Restaurant Resources handle CRUD operations
 class users(Resource):
+    method_decorators = [token_required]
     def get(self):
         users=[user.to_dict() for user in User.query.all()]
         response=make_response(
@@ -182,6 +183,7 @@ class users(Resource):
         return response
         
 class User_by_id(Resource):
+    method_decorators = [token_required]
     def get(self,id):
         if id is None:
             return make_response(jsonify({'message':'missing id parameter'}),400)
@@ -229,6 +231,7 @@ class User_by_id(Resource):
         return make_response(jsonify({'message':'user not found'}),404)           
 
 class restaurants(Resource):
+    method_decorators = [token_required]
     def get(self):
         restaurants=[restaurant.to_dict()  for restaurant in Restaurant.query.all()]
         response=make_response(
@@ -238,6 +241,7 @@ class restaurants(Resource):
         return response
         
 class Restaurant_by_id(Resource):
+    method_decorators = [token_required]
     def get(self,id):
         if id is None:
             return make_response(jsonify({'message':'missing id parameter'}),400)
