@@ -4,7 +4,6 @@ import * as Yup from "yup";
 import YupPassword from "yup-password";
 import { Button } from "../components/UI/Button";
 import { useNavigate } from "react-router-dom";
-import { useSnackbar } from "notistack";
 import ImageCarousel from "../components/UI/ImageCarousel";
 import { toast } from "react-toastify";
 
@@ -24,8 +23,6 @@ const validationSchema = Yup.object().shape({
 
 const Register = () => {
   const navigate = useNavigate();
-  const { enqueueSnackbar } = useSnackbar();
-
   return (
     <div className="flex items-center justify-center min-h-screen bg-white px-4">
       <div className="grid md:grid-cols-2 w-full max-w-5xl shadow-xl rounded-2xl overflow-hidden">
@@ -55,7 +52,10 @@ const Register = () => {
                   if (res.status === 201) {
                     toast.success("Login successful!");
                     navigate("/home");
-                    return res.json();
+                    return res.json().then((data) => {
+                      navigate("/home");
+                      localStorage.setItem('token', data?.token);
+                    });
                   }
                   return res.json().then((data) => {
                     console.log(data)
